@@ -38,7 +38,9 @@ list(APPEND DFN_LINKED_LIBRARIES PRIVATE GTest::gmock_main)
 
 # Insert Sources
 ################################################################################
-
+add_subdirectory(src)
+add_subdirectory(src_test)
+add_subdirectory(Testing_Paraview_Code)
 list(APPEND DFN_SOURCES ${DFN_sources})
 list(APPEND DFN_HEADERS ${DFN_headers})
 list(APPEND DFN_INCLUDE ${DFN_includes})
