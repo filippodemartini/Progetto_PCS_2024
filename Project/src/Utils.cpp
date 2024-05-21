@@ -124,4 +124,56 @@ Vector3d FindBarycentre(vector<Vector3d>& fracture)
     return barycentre;
 }
 
+double CircleRadius(vector<Vector3d>& fracture)
+{
+    double radius = 0.0;
+    for(const auto& vertices : fracture){
+        Vector3d vector_distance = vertices - FindBarycentre(fracture);
+        double distance = vector_distance.norm();
+        if(distance>radius)
+            radius = distance;
+    }
+    return radius;
+}
+
+Vector3d NormalToPlane(vector<Vector3d>& fracture)
+{
+    Vector3d p0 = fracture[0];
+    Vector3d p1 = fracture[1];
+    Vector3d p2 = fracture[2];
+
+    Vector3d v = p1 - p0;
+    Vector3d u = p2 - p0;
+
+    Vector3d n = u.cross(v).normalized();
+    return n;
+}
+
+bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d>& fracture_generator2, double tol)
+{
+    Vector3d barycentre1 = FindBarycentre(fracture_generator1);
+    Vector3d barycentre2 = FindBarycentre(fracture_generator2);
+
+    double barycentres_distance = (barycentre1 - barycentre2).squaredNorm();
+
+    double radius1 = CircleRadius(fracture_generator1);
+    double radius2 = CircleRadius(fracture_generator2);
+
+    if ((radius1 + radius2 + tol) > barycentres_distance)
+    {
+        return true;
+    }
+    return false;
+}
+
+// void FindTraces(GeometryDFN& dfn)
+// {
+//     const unsigned int n = 1000;
+
+//     dfn.Traces_Id.reserve(n);
+//     dfn.Traces_Generator_Id.reserve(n);
+
+
+// }
+
 }
