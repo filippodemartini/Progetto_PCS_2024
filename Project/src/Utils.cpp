@@ -172,7 +172,7 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 
 void FindTraces(GeometryDFN& dfn)
 {
-    unsigned int traces = 0;
+    unsigned int index_trace = 0;
     double tol = numeric_limits<double>::epsilon();
     // CONTROLLARE COSA CAMBIA SENZA IL -1
     for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
@@ -193,14 +193,52 @@ void FindTraces(GeometryDFN& dfn)
                 double det_matrix = Planes_Matrix.determinant();
                 if(det_matrix > tol){
                     Vector3d intersection = Planes_Matrix.fullPivLu().solve(b);
+
+                    unsigned int num_int_traces = 0;
+                    array<Vector3d,2> int_traces;
+                    for(unsigned int n = 0; n < dfn.Fractures_Number_Vertices[i]; n++)
+                    {
+                        Vector3d p0 = dfn.Fractures_Vertices[i][n];
+                        Vector3d p1 = dfn.Fractures_Vertices[i][(n+1)%dfn.Fractures_Number_Vertices[i]];
+
+                        Vector3d p2 = dfn.Fractures_Vertices[j][n];
+                        Vector3d p3 = dfn.Fractures_Vertices[j][(n+1)%dfn.Fractures_Number_Vertices[i]];
+
+                        MatrixXd Matrix_int_traces(3,2);
+
+                        Matrix_int_traces.col(0) = p1-p0;
+                        Matrix_int_traces.col(1) = p3-p2;
+
+                        Vector3d b_int = intersection-p0;   // GUARDARE SE INVECE DI INTERSECTION USARE P2
+
+                        Vector2d alpha_beta = Matrix_int_traces.householderQr().solve(b_int);
+
+
+                    }
                 }
 
 
             }
         }
     }
-
-
 }
+
+bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2)
+{
+    bool result = false;
+    double tol = numeric_limits<double>::epsilon();
+    Vector3d normal1 = NormalToPlane(fracture1);
+    Vector3d normal2 = NormalToPlane(fracture2);
+
+    Vector3d direction = normal1.cross(normal2);
+
+    if(direction.norm() < tol)
+    {
+        result = true;
+    }
+    return result;
+}
+
+//Vector3d point_intersection_lines(GeometryDFN& dfn)
 
 }
