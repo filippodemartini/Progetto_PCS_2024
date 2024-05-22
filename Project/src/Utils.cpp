@@ -159,6 +159,8 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
     double radius1 = CircleRadius(fracture_generator1);
     double radius2 = CircleRadius(fracture_generator2);
 
+    //unsigned int circle_intersections = 0;
+
     if ((radius1 + radius2 + tol) > barycentres_distance)
     {
         return true;
@@ -166,14 +168,39 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
     return false;
 }
 
-// void FindTraces(GeometryDFN& dfn)
-// {
-//     const unsigned int n = 1000;
-
-//     dfn.Traces_Id.reserve(n);
-//     dfn.Traces_Generator_Id.reserve(n);
 
 
-// }
+void FindTraces(GeometryDFN& dfn)
+{
+    unsigned int traces = 0;
+    double tol = numeric_limits<double>::epsilon();
+    // CONTROLLARE COSA CAMBIA SENZA IL -1
+    for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
+        for(unsigned int j = i+1; j<dfn.Number_Fractures; j++){
+            if(FirstSelectionTraces(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j], tol)){
+                Vector3d Normal_i = NormalToPlane(dfn.Fractures_Vertices[i]);
+                Vector3d Normal_j = NormalToPlane(dfn.Fractures_Vertices[j]);
+                Vector3d T = Normal_i.cross(Normal_j);
+                Matrix3d Planes_Matrix;
+                Planes_Matrix.row(0) = Normal_i.transpose();
+                Planes_Matrix.row(1) = Normal_j.transpose();
+                Planes_Matrix.row(2) = T.transpose();
+                double d1 = Normal_i.dot(FindBarycentre(dfn.Fractures_Vertices[i]));
+                double d2 = Normal_j.dot(FindBarycentre(dfn.Fractures_Vertices[j]));
+                double d3 = 0;
+                Vector3d b = {d1,d2,d3};
+
+                double det_matrix = Planes_Matrix.determinant();
+                if(det_matrix > tol){
+                    Vector3d intersection = Planes_Matrix.fullPivLu().solve(b);
+                }
+
+
+            }
+        }
+    }
+
+
+}
 
 }
