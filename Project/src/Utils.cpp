@@ -111,7 +111,7 @@ bool ImportFractures(const string &filename, GeometryDFN& dfn)
     return true;
 }
 
-Vector3d FindBarycentre(vector<Vector3d>& fracture)
+inline Vector3d FindBarycentre(vector<Vector3d>& fracture)
 {
     Vector3d sum_vertices = Vector3d::Zero();
     Vector3d barycentre = Vector3d::Zero();
@@ -136,7 +136,7 @@ double CircleRadius(vector<Vector3d>& fracture)
     return radius;
 }
 
-Vector3d NormalToPlane(vector<Vector3d>& fracture)
+inline Vector3d NormalToPlane(vector<Vector3d>& fracture)
 {
     Vector3d p0 = fracture[0];
     Vector3d p1 = fracture[1];
@@ -169,7 +169,7 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 }
 
 
-
+// CAMBIARE VOID
 void FindTraces(GeometryDFN& dfn)
 {
     unsigned int index_trace = 0;
@@ -182,9 +182,9 @@ void FindTraces(GeometryDFN& dfn)
                 Vector3d Normal_j = NormalToPlane(dfn.Fractures_Vertices[j]);
                 Vector3d T = Normal_i.cross(Normal_j);
                 Matrix3d Planes_Matrix;
-                Planes_Matrix.row(0) = Normal_i.transpose();
-                Planes_Matrix.row(1) = Normal_j.transpose();
-                Planes_Matrix.row(2) = T.transpose();
+                Planes_Matrix.row(0) = Normal_i;
+                Planes_Matrix.row(1) = Normal_j;
+                Planes_Matrix.row(2) = T;
                 double d1 = Normal_i.dot(FindBarycentre(dfn.Fractures_Vertices[i]));
                 double d2 = Normal_j.dot(FindBarycentre(dfn.Fractures_Vertices[j]));
                 double d3 = 0;
@@ -193,28 +193,6 @@ void FindTraces(GeometryDFN& dfn)
                 double det_matrix = Planes_Matrix.determinant();
                 if(det_matrix > tol){
                     Vector3d intersection = Planes_Matrix.fullPivLu().solve(b);
-
-                    unsigned int num_int_traces = 0;
-                    array<Vector3d,2> int_traces;
-                    for(unsigned int n = 0; n < dfn.Fractures_Number_Vertices[i]; n++)
-                    {
-                        Vector3d p0 = dfn.Fractures_Vertices[i][n];
-                        Vector3d p1 = dfn.Fractures_Vertices[i][(n+1)%dfn.Fractures_Number_Vertices[i]];
-
-                        Vector3d p2 = dfn.Fractures_Vertices[j][n];
-                        Vector3d p3 = dfn.Fractures_Vertices[j][(n+1)%dfn.Fractures_Number_Vertices[i]];
-
-                        MatrixXd Matrix_int_traces(3,2);
-
-                        Matrix_int_traces.col(0) = p1-p0;
-                        Matrix_int_traces.col(1) = p3-p2;
-
-                        Vector3d b_int = intersection-p0;   // GUARDARE SE INVECE DI INTERSECTION USARE P2
-
-                        Vector2d alpha_beta = Matrix_int_traces.householderQr().solve(b_int);
-
-
-                    }
                 }
 
 
@@ -237,6 +215,47 @@ bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2)
         result = true;
     }
     return result;
+}
+
+inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates)
+{
+    double x1 = coordinates[id_vertex1][0];
+    double y1 = coordinates[id_vertex1][1];
+    double z1 = coordinates[id_vertex1][2];
+    double x2 = coordinates[id_vertex2][0];
+    double y2 = coordinates[id_vertex2][1];
+    double z2 = coordinates[id_vertex2][2];
+
+    Vector3d direction = {x2-x1, y2-y1, z2-z1};
+    Vector3d line_origin = {x1, y1, z1};
+    MatrixXd direction_and_line_origin;
+    direction_and_line_origin.resize(2,3);
+    direction_and_line_origin.row(0) = direction;
+    direction_and_line_origin.row(1) = line_origin;
+
+    return direction_and_line_origin;
+}
+
+inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection)
+{
+    Vector3d direction1 = fr_v_line.row(0).transpose();
+    Vector3d line_origin1 = fr_v_line.row(1).transpose();
+
+    Vector3d direction2 = intersection.row(0).transpose();
+    Vector3d line_origin2 = intersection.row(1).transpose();
+
+    MatrixXd A = MatrixXd::Zero(3,2);
+    A.col(0) = direction1;
+    A.col(1) = -direction2;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
+
+    double b0 = line_origin2[0] - line_origin1[0];
+    double b1 = line_origin2[1] - line_origin1[1];
+    double b2 = line_origin2[2] - line_origin1[2];
+    Vector3d b = {b0,b1,b2};
+
+    Vector2d alpha_beta = A.householderQr().solve(b);
+
+    return alpha_beta;
 }
 
 //Vector3d point_intersection_lines(GeometryDFN& dfn)
