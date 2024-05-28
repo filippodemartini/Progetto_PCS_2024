@@ -174,7 +174,7 @@ void FindTraces(GeometryDFN& dfn)
 {
     unsigned int index_trace = 0;
     double tol = numeric_limits<double>::epsilon();
-    // CONTROLLARE COSA CAMBIA SENZA IL -1
+    // CONTROLLARE COSA CAMBIA SENZA IL -1; il -1 serve per l'id
     for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
         for(unsigned int j = i+1; j<dfn.Number_Fractures; j++){
             if(FirstSelectionTraces(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j], tol)){
@@ -192,7 +192,7 @@ void FindTraces(GeometryDFN& dfn)
 
                 double det_matrix = Planes_Matrix.determinant();
                 if(det_matrix > tol){
-                    Vector3d intersection = Planes_Matrix.fullPivLu().solve(b);
+                    Vector3d intersection = Planes_Matrix.fullPivLu().solve(b); // trovato vettore p1,p2,p3 del foglio geom comp 2
                 }
 
 
@@ -256,6 +256,38 @@ inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersectio
     Vector2d alpha_beta = A.householderQr().solve(b);
 
     return alpha_beta;
+}
+
+Matrix3d fracture_plane(const vector<Vector3d>& coordinates, vector<unsigned int> id_vertex)
+{
+    Matrix3d FP;
+    Vector3d p0 = coordinates[id_vertex[0]];
+    Vector3d p1 = coordinates[id_vertex[1]];
+    Vector3d p2 = coordinates[id_vertex[2]];
+
+    FP.row(0) = p0;
+    FP.row(1) = p2-p0;
+    FP.row(2) = p1-p0;
+
+    return FP;
+}
+
+bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
+{ // se il punto è più distante dall'inizio del segmento rispetto alla fine del segmento stesso allora il punto non appartiene al segmento
+    bool on_line = false;
+
+    double tol = numeric_limits<double>::epsilon();
+    double line_length = (line_origin - line_end).norm();
+    double distance_point_origin = (line_origin - point).norm();
+    double distance_point_end = (line_end - point).norm();
+    double difference = distance_point_origin + distance_point_end - line_length;
+
+    if(abs(difference)<tol)
+    {
+        on_line = true;
+    }
+
+    return on_line;
 }
 
 //Vector3d point_intersection_lines(GeometryDFN& dfn)
