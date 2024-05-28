@@ -21,6 +21,8 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 
 void FindTraces(GeometryDFN& dfn);
 
+bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point_coord);
+
 bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
 inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);

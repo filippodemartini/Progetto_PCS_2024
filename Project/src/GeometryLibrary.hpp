@@ -15,6 +15,7 @@ struct GeometryDFN
     vector<unsigned int> Fractures_Id = {};
     vector<unsigned int> Fractures_Number_Vertices = {};
     map<unsigned int, vector<Vector3d>> Fractures_Vertices = {};
+   // vector<unsigned int> Vertices_id = {};
 
     unsigned int Number_Traces = 0;
     // vector<unsigned int> Traces_Id = {};
