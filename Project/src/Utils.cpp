@@ -163,10 +163,10 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 
     if ((radius1 + radius2 + tol) > barycentres_distance)
     {
-        return true;
+        return false;
     }
-    return false;
-}
+    return true;
+}                  // CONTROLLA I RETURN DI FALSE E TRUE PER PRIMA SCREMATURA
 
 
 // CAMBIARE VOID
@@ -177,7 +177,13 @@ void FindTraces(GeometryDFN& dfn)
     // CONTROLLARE COSA CAMBIA SENZA IL -1; il -1 serve per l'id
     for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
         for(unsigned int j = i+1; j<dfn.Number_Fractures; j++){
-            if(FirstSelectionTraces(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j], tol)){
+
+            if(parallel_planes(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j])){
+                cout << "Le fratture: " << dfn.Fractures_Id[i] << " e " << dfn.Fractures_Id[j] << " sono parallele" << endl;
+                continue;           // CONTROLLA LA FUNZIONALITA DI CONTINUE
+            }
+
+            if(!FirstSelectionTraces(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j], tol)){   // CONTROLLA IL !
                 Vector3d Normal_i = NormalToPlane(dfn.Fractures_Vertices[i]);
                 Vector3d Normal_j = NormalToPlane(dfn.Fractures_Vertices[j]);
                 Vector3d T = Normal_i.cross(Normal_j);
@@ -192,7 +198,20 @@ void FindTraces(GeometryDFN& dfn)
 
                 double det_matrix = Planes_Matrix.determinant();
                 if(det_matrix > tol){
-                    Vector3d intersection = Planes_Matrix.fullPivLu().solve(b); // trovato vettore p1,p2,p3 del foglio geom comp 2
+                    Vector3d p_intersection = Planes_Matrix.fullPivLu().solve(b); // trovato vettore p1,p2,p3 del foglio geom comp 2
+                    unsigned int num_traces_points = 0;
+                    for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[i]; k++)
+                    {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
+                        MatrixXd fr_vertices_line = fracture_vertices_line(dfn.Fractures_Id[i], dfn.Fractures_Id[j], dfn.Fractures_Vertices[dfn.Fractures_Id[k]]);
+                        Vector2d alpha_beta = alpha_beta_intersection(fr_vertices_line, p_intersection);
+                        array<Vector3d,2> traces_points;
+                        if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
+                        { // DUBBIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+                            // Vector3d line1 =
+                        }
+
+                    }
+
                 }
 
 
@@ -238,6 +257,7 @@ inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_
 
 inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection)
 {
+    double tol = numeric_limits<double>::epsilon();
     Vector3d direction1 = fr_v_line.row(0).transpose();
     Vector3d line_origin1 = fr_v_line.row(1).transpose();
 
@@ -253,10 +273,17 @@ inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersectio
     double b2 = line_origin2[2] - line_origin1[2];
     Vector3d b = {b0,b1,b2};
 
-    Vector2d alpha_beta = A.householderQr().solve(b);
+    if(direction1.cross(direction2).squaredNorm() < tol)
+    {
+        cout << "Le due rette direzionali sono parallele" << endl;
+    }
 
-    return alpha_beta;
-}
+    else
+    {
+       Vector2d alpha_beta = A.householderQr().solve(b);
+       return alpha_beta;
+    }
+}  //  CONTROLLA IL RETURN
 
 Matrix3d fracture_plane(const vector<Vector3d>& coordinates, vector<unsigned int> id_vertex)
 {
@@ -289,6 +316,41 @@ bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
 
     return on_line;
 }
+
+bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3)
+{
+    Vector3d vector0 = p1-p3;
+    Vector3d vector1 = p1-p2;
+    Vector3d vector2 = p1-p0;
+
+    double dot00 = vector0.dot(vector0);
+    double dot01 = vector0.dot(vector1);
+    double dot02 = vector0.dot(vector2);
+    double dot11 = vector1.dot(vector1);
+    double dot12 = vector1.dot(vector2);
+
+    double barycentre_coord1 = (1 / (dot00*dot11 - dot01*dot01)) * (dot11*dot02 - dot01*dot12);
+    double barycentre_coord2 = (1 / (dot00*dot11 - dot01*dot01)) * (dot00*dot12 - dot01*dot02);
+
+    if ((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1))  // questi sono gli alfa0 e alfa1 di geom comp
+    {
+        return true;
+    }
+    return false;
+}
+
+bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_vertex)
+{
+    for(unsigned int i = 0; i < fracture_vertex.size()-1; i++)
+    {
+        if(check_barycentre_coord(point, fracture_vertex[0], fracture_vertex[i], fracture_vertex[i+1]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 //Vector3d point_intersection_lines(GeometryDFN& dfn)
 
