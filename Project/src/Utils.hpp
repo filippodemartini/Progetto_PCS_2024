@@ -23,6 +23,10 @@ void FindTraces(GeometryDFN& dfn);
 
 bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point_coord);
 
+bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3);
+
+bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_vertex);
+
 bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
 inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);
