@@ -18,9 +18,9 @@ struct GeometryDFN
    // vector<unsigned int> Vertices_id = {};
 
     unsigned int Number_Traces = 0;
-    // vector<unsigned int> Traces_Id = {};
-    // vector<Vector2i> Traces_Generator_Id;
-    map<unsigned int, vector<Vector2i>> Id_traces_generator;
+    vector<unsigned int> Traces_Id = {};
+    vector<Vector2i> Traces_Generator_Id;
+   // map<unsigned int, vector<Vector2i>> Id_traces_generator;
     map<unsigned int, array<Vector3d,2>> Traces_Coordinates;
     vector<double> traces_length = {};
     map<unsigned int, array<bool,2>> Tips;
