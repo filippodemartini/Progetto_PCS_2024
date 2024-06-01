@@ -200,19 +200,99 @@ void FindTraces(GeometryDFN& dfn)
                 if(det_matrix > tol){
                     Vector3d p_intersection = Planes_Matrix.fullPivLu().solve(b); // trovato vettore p1,p2,p3 del foglio geom comp 2
                     unsigned int num_traces_points = 0;
+                    array<Vector3d,2> traces_points;
                     for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[i]; k++)
                     {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
-                        MatrixXd fr_vertices_line = fracture_vertices_line(dfn.Fractures_Id[i], dfn.Fractures_Id[j], dfn.Fractures_Vertices[dfn.Fractures_Id[k]]);
-                        Vector2d alpha_beta = alpha_beta_intersection(fr_vertices_line, p_intersection);
-                        array<Vector3d,2> traces_points;
+
+                        Vector3d v1 = dfn.Fractures_Vertices[i][k];
+                        Vector3d v2 = dfn.Fractures_Vertices[i][(k + 1) % dfn.Fractures_Number_Vertices[i]];
+
+                        MatrixXd A = MatrixXd::Zero(3,2);
+
+                        A.col(0) = v2-v1;
+                        A.col(1) = T;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
+
+                        if((v2-v1).cross(T).squaredNorm() < tol)
+                        {
+                            continue;
+                        }
+
+
+                        double b0 = p_intersection[0] - v1[0];
+                        double b1 = p_intersection[1] - v1[1];
+                        double b2 = p_intersection[2] - v1[2];
+                        Vector3d b = {b0,b1,b2};
+
+                        Vector2d alpha_beta = A.householderQr().solve(b);
+
                         if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
-                        { // DUBBIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-                            // Vector3d line1 =
+                        {
+                            Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
+                            if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]))
+                                {
+                                    traces_points[num_traces_points] = Intersection;
+                                    num_traces_points += 1;
+                                }
+                            else if (num_traces_points == 1 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]) && traces_points[0] !=Intersection)
+                            { traces_points[num_traces_points]=Intersection;
+                                num_traces_points+=1;
+                                    dfn.Number_Traces+=1;
+                                dfn.Traces_Id.push_back(index_trace);
+                                Vector2i fracture = {dfn.Fractures_Id[i], dfn.Fractures_Id[j]};
+                                dfn.Traces_Generator_Id.push_back(fracture);
+                                dfn.Traces_Coordinates[index_trace] = traces_points;
+                                index_trace += 1;
                         }
 
                     }
 
                 }
+                    for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[j]; k++)
+                    {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
+
+                        Vector3d v1 = dfn.Fractures_Vertices[j][k];
+                        Vector3d v2 = dfn.Fractures_Vertices[j][(k + 1) % dfn.Fractures_Number_Vertices[i]];
+
+                        MatrixXd A = MatrixXd::Zero(3,2);
+
+                        A.col(0) = v2-v1;
+                        A.col(1) = T;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
+
+                        if((v2-v1).cross(T).squaredNorm() < tol)
+                        {
+                            continue;
+                        }
+
+
+                        double b0 = p_intersection[0] - v1[0];
+                        double b1 = p_intersection[1] - v1[1];
+                        double b2 = p_intersection[2] - v1[2];
+                        Vector3d b = {b0,b1,b2};
+
+                        Vector2d alpha_beta = A.householderQr().solve(b);
+
+                        if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
+                        {
+                            Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
+                            if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[i]))
+                            {
+                                traces_points[num_traces_points] = Intersection;
+                                num_traces_points += 1;
+                            }
+                            else if (num_traces_points == 1 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[i]) && traces_points[0] !=Intersection)
+                            { traces_points[num_traces_points]=Intersection;
+                                num_traces_points+=1;
+                                dfn.Number_Traces+=1;
+                                dfn.Traces_Id.push_back(index_trace);
+                                Vector2i fracture = {dfn.Fractures_Id[i], dfn.Fractures_Id[j]};
+                                dfn.Traces_Generator_Id.push_back(fracture);
+                                dfn.Traces_Coordinates[index_trace] = traces_points;
+                                index_trace += 1;
+                            }
+
+                        }
+
+                    }
 
 
             }
