@@ -7,7 +7,7 @@ using namespace std;
 
 namespace GeometryLibrary{
 
-bool ImportDFN(const string &filepath, GeometryDFN& dfn);
+// bool ImportDFN(const string &filepath, GeometryDFN& dfn);
 
 bool ImportFractures(const string &filename, GeometryDFN& dfn);
 
@@ -29,11 +29,11 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 
 bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
-inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);
+//inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);
 
-inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection);
+//inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection);
 
-inline Vector3d point_intersection_lines(GeometryDFN& dfn);
+//inline Vector3d point_intersection_lines(GeometryDFN& dfn);
 
 bool checkSegmentIntersection(vector<Vector3d>& intersections, const Vector3d normal_plane, Vector3d plane_point, Vector3d point1, Vector3d point2, double tol);
 

@@ -168,12 +168,29 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
     return true;
 }                  // CONTROLLA I RETURN DI FALSE E TRUE PER PRIMA SCREMATURA
 
+bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2)
+{
+    bool result = false;
+    double tol = numeric_limits<double>::epsilon();
+    Vector3d normal1 = NormalToPlane(fracture1);
+    Vector3d normal2 = NormalToPlane(fracture2);
+
+    Vector3d direction = normal1.cross(normal2);
+
+    if(direction.norm() < tol)
+    {
+        result = true;
+    }
+    return result;
+}
+
 
 // CAMBIARE VOID
 void FindTraces(GeometryDFN& dfn)
 {
     unsigned int index_trace = 0;
     double tol = numeric_limits<double>::epsilon();
+
     // CONTROLLARE COSA CAMBIA SENZA IL -1; il -1 serve per l'id
     for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
         for(unsigned int j = i+1; j<dfn.Number_Fractures; j++){
@@ -298,72 +315,58 @@ void FindTraces(GeometryDFN& dfn)
             }
         }
     }
+
 }
 
-bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2)
-{
-    bool result = false;
-    double tol = numeric_limits<double>::epsilon();
-    Vector3d normal1 = NormalToPlane(fracture1);
-    Vector3d normal2 = NormalToPlane(fracture2);
 
-    Vector3d direction = normal1.cross(normal2);
+// inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates)
+// {
+//     double x1 = coordinates[id_vertex1][0];
+//     double y1 = coordinates[id_vertex1][1];
+//     double z1 = coordinates[id_vertex1][2];
+//     double x2 = coordinates[id_vertex2][0];
+//     double y2 = coordinates[id_vertex2][1];
+//     double z2 = coordinates[id_vertex2][2];
 
-    if(direction.norm() < tol)
-    {
-        result = true;
-    }
-    return result;
-}
+//     Vector3d direction = {x2-x1, y2-y1, z2-z1};
+//     Vector3d line_origin = {x1, y1, z1};
+//     MatrixXd direction_and_line_origin;
+//     direction_and_line_origin.resize(2,3);
+//     direction_and_line_origin.row(0) = direction;
+//     direction_and_line_origin.row(1) = line_origin;
 
-inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates)
-{
-    double x1 = coordinates[id_vertex1][0];
-    double y1 = coordinates[id_vertex1][1];
-    double z1 = coordinates[id_vertex1][2];
-    double x2 = coordinates[id_vertex2][0];
-    double y2 = coordinates[id_vertex2][1];
-    double z2 = coordinates[id_vertex2][2];
+//     return direction_and_line_origin;
+// }
 
-    Vector3d direction = {x2-x1, y2-y1, z2-z1};
-    Vector3d line_origin = {x1, y1, z1};
-    MatrixXd direction_and_line_origin;
-    direction_and_line_origin.resize(2,3);
-    direction_and_line_origin.row(0) = direction;
-    direction_and_line_origin.row(1) = line_origin;
+// inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection)
+// {
+//     double tol = numeric_limits<double>::epsilon();
+//     Vector3d direction1 = fr_v_line.row(0).transpose();
+//     Vector3d line_origin1 = fr_v_line.row(1).transpose();
 
-    return direction_and_line_origin;
-}
+//     Vector3d direction2 = intersection.row(0).transpose();
+//     Vector3d line_origin2 = intersection.row(1).transpose();
 
-inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection)
-{
-    double tol = numeric_limits<double>::epsilon();
-    Vector3d direction1 = fr_v_line.row(0).transpose();
-    Vector3d line_origin1 = fr_v_line.row(1).transpose();
+//     MatrixXd A = MatrixXd::Zero(3,2);
+//     A.col(0) = direction1;
+//     A.col(1) = -direction2;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
 
-    Vector3d direction2 = intersection.row(0).transpose();
-    Vector3d line_origin2 = intersection.row(1).transpose();
+//     double b0 = line_origin2[0] - line_origin1[0];
+//     double b1 = line_origin2[1] - line_origin1[1];
+//     double b2 = line_origin2[2] - line_origin1[2];
+//     Vector3d b = {b0,b1,b2};
 
-    MatrixXd A = MatrixXd::Zero(3,2);
-    A.col(0) = direction1;
-    A.col(1) = -direction2;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
+//     if(direction1.cross(direction2).squaredNorm() < tol)
+//     {
+//         cout << "Le due rette direzionali sono parallele" << endl;
+//     }
 
-    double b0 = line_origin2[0] - line_origin1[0];
-    double b1 = line_origin2[1] - line_origin1[1];
-    double b2 = line_origin2[2] - line_origin1[2];
-    Vector3d b = {b0,b1,b2};
-
-    if(direction1.cross(direction2).squaredNorm() < tol)
-    {
-        cout << "Le due rette direzionali sono parallele" << endl;
-    }
-
-    else
-    {
-       Vector2d alpha_beta = A.householderQr().solve(b);
-       return alpha_beta;
-    }
-}  //  CONTROLLA IL RETURN
+//     else
+//     {
+//        Vector2d alpha_beta = A.householderQr().solve(b);
+//        return alpha_beta;
+//     }
+// }  //  CONTROLLA IL RETURN
 
 Matrix3d fracture_plane(const vector<Vector3d>& coordinates, vector<unsigned int> id_vertex)
 {
