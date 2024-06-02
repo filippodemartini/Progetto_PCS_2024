@@ -21,6 +21,8 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 
 void FindTraces(GeometryDFN& dfn);
 
+void TracesType(GeometryDFN& dfn);
+
 bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point_coord);
 
 bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3);

@@ -310,12 +310,10 @@ void FindTraces(GeometryDFN& dfn)
                         }
 
                     }
-
-
+                }
             }
         }
     }
-
 }
 
 
@@ -432,6 +430,41 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
         }
     }
     return false;
+}
+
+void TracesType(GeometryDFN& dfn)
+{
+    for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
+    {
+        for(unsigned int j = 0; j < dfn.Number_Traces; j++)
+        {
+            unsigned int fracture_id = i;
+            if(fracture_id==dfn.Traces_Generator_Id[j][0] || fracture_id==dfn.Traces_Generator_Id[j][1])
+            {
+                Vector2i fracture_type;
+                for(unsigned int k = 0; k<2; k++)  // itero sui due punti estremi della traccia in questione
+                {
+                    Vector3d point = dfn.Traces_Coordinates[j][k];
+                    bool result = true;
+                    for(unsigned int l = 0; l<dfn.Fractures_Number_Vertices[i]; l++)
+                    {
+                        Vector3d point1 = dfn.Fractures_Vertices[i][l];
+                        Vector3d point2 = dfn.Fractures_Vertices[i][(l+1)%dfn.Fractures_Number_Vertices[i]];
+                        if(point_on_line(point1,point2,point))
+                        {
+                            result = false;
+                        }
+                    }
+                    fracture_type[k] = result;
+                }
+                if(fracture_type[0]==false && fracture_type[1]==false)
+                {
+
+                }
+
+            }
+        }
+    }
 }
 
 
