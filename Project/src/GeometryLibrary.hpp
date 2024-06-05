@@ -23,7 +23,8 @@ struct GeometryDFN
    // map<unsigned int, vector<Vector2i>> Id_traces_generator;
     map<unsigned int, array<Vector3d,2>> Traces_Coordinates;
     vector<double> traces_length = {};
-    map<unsigned int, array<bool,2>> Tips = {};
+    map<unsigned int, array<bool,2>> Traces_Tips = {};
+    vector<unsigned int> id_fracture_traces = {};
 
     //double tol = numeric_limits<double>::epsilon();
 };

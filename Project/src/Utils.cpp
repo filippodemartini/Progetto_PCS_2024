@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include "Eigen/Eigen"
+#include "MergeSort.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -432,42 +433,83 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
     return false;
 }
 
-void TracesType(GeometryDFN& dfn)
+// riguardare questa funzione che è sbagliata
+// void TracesType(GeometryDFN& dfn)
+// {
+//     dfn.id_fracture_traces.reserve(dfn.Number_Fractures);
+//     for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
+//     {
+//         unsigned int number=0;
+//         for(unsigned int j = 0; j < dfn.Number_Traces; j++)
+//         {
+//             unsigned int fracture_id = i;
+//             if(fracture_id==dfn.Traces_Generator_Id[j][0] || fracture_id==dfn.Traces_Generator_Id[j][1])
+//             {
+//                 Vector2i fracture_type;
+//                 for(unsigned int k = 0; k<2; k++)  // itero sui due punti estremi della traccia in questione
+//                 {
+//                     Vector3d point = dfn.Traces_Coordinates[j][k];
+//                     bool result = true;
+//                     for(unsigned int l = 0; l<dfn.Fractures_Number_Vertices[i]; l++)
+//                     {
+//                         Vector3d point1 = dfn.Fractures_Vertices[i][l];
+//                         Vector3d point2 = dfn.Fractures_Vertices[i][(l+1)%dfn.Fractures_Number_Vertices[i]];
+//                         if(point_on_line(point1,point2,point))
+//                         {
+//                             result = false;
+//                         }
+//                     }
+//                     fracture_type[k] = result;
+//                 }
+//                 if(fracture_type[0]==false && fracture_type[1]==false)
+//                 {
+//                     dfn;
+//                 }
+
+//             }
+//         }
+//     }
+// }
+
+vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
 {
-    for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
+    vector<pair<int,double>> pairLengthID;
+    for (unsigned int i=0; i<length.size();i++)
     {
-        for(unsigned int j = 0; j < dfn.Number_Traces; j++)
+        pairLengthID.push_back({i,length[i]});
+    }
+    SortLibrary::MergeSort(pairLengthID);
+
+    vector<Vector2i> passante;
+    vector<Vector2i> non_passante;
+    for (unsigned int i=0; i<pairLengthID.size();i++)
+    {
+       for (unsigned int j=0; j<type.size(); j++)
         {
-            unsigned int fracture_id = i;
-            if(fracture_id==dfn.Traces_Generator_Id[j][0] || fracture_id==dfn.Traces_Generator_Id[j][1])
+            if (type[j][1]==false && type[j][0]== pairLengthID[i].first)
+           {
+               passante.push_back(type[j]);
+                break;
+           }
+            else if (type[j][1]==true && type[j][0]== pairLengthID[i].first)
             {
-                Vector2i fracture_type;
-                for(unsigned int k = 0; k<2; k++)  // itero sui due punti estremi della traccia in questione
-                {
-                    Vector3d point = dfn.Traces_Coordinates[j][k];
-                    bool result = true;
-                    for(unsigned int l = 0; l<dfn.Fractures_Number_Vertices[i]; l++)
-                    {
-                        Vector3d point1 = dfn.Fractures_Vertices[i][l];
-                        Vector3d point2 = dfn.Fractures_Vertices[i][(l+1)%dfn.Fractures_Number_Vertices[i]];
-                        if(point_on_line(point1,point2,point))
-                        {
-                            result = false;
-                        }
-                    }
-                    fracture_type[k] = result;
-                }
-                if(fracture_type[0]==false && fracture_type[1]==false)
-                {
-
-                }
-
+                non_passante.push_back(type[j]);
+               break;
             }
         }
     }
+    vector<Vector2i>sorted;
+    for(unsigned int i=0; i<passante.size();i++)
+    {
+        sorted.push_back(passante[i]);
+    }
+    for(unsigned int i=0; i<non_passante.size();i++)
+    {
+        sorted.push_back(non_passante[i]);
+    }
+    return sorted;
+    }
+
 }
 
 
-//Vector3d point_intersection_lines(GeometryDFN& dfn)
-
-}
