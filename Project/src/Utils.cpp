@@ -223,11 +223,11 @@ void FindTraces(GeometryDFN& dfn)
                     {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
 
                         Vector3d v1 = dfn.Fractures_Vertices[i][k];
-                        Vector3d v2 = dfn.Fractures_Vertices[i][(k + 1) % dfn.Fractures_Number_Vertices[i]];
+                        Vector3d v2 = dfn.Fractures_Vertices[i][(k + 1) % dfn.Fractures_Number_Vertices[i]]; // faccio sta roba per non andare fuori scope
 
                         MatrixXd A = MatrixXd::Zero(3,2);
 
-                        A.col(0) = v2-v1;
+                        A.col(0) = v2-v1;   // è una retta così come t
                         A.col(1) = T;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
 
                         if((v2-v1).cross(T).squaredNorm() < tol)
@@ -244,7 +244,7 @@ void FindTraces(GeometryDFN& dfn)
                         Vector2d alpha_beta = A.householderQr().solve(b);
 
                         if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
-                        {
+                        {//controllo che non prenda due volte lo stesso punto
                             Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
                             if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]))
                                 {
@@ -260,11 +260,11 @@ void FindTraces(GeometryDFN& dfn)
                                 dfn.Traces_Generator_Id.push_back(fracture);
                                 dfn.Traces_Coordinates[index_trace] = traces_points;
                                 index_trace += 1;
+                            }
+
                         }
 
-                    }
-
-                }
+                    } // qui controllo sulla seconda frattura, almeno da trovare anche il secondo punto di intersezione nel caso rosso-blu in FR3
                     for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[j]; k++)
                     {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
 
@@ -367,19 +367,19 @@ void FindTraces(GeometryDFN& dfn)
 //     }
 // }  //  CONTROLLA IL RETURN
 
-Matrix3d fracture_plane(const vector<Vector3d>& coordinates, vector<unsigned int> id_vertex)
-{
-    Matrix3d FP;
-    Vector3d p0 = coordinates[id_vertex[0]];
-    Vector3d p1 = coordinates[id_vertex[1]];
-    Vector3d p2 = coordinates[id_vertex[2]];
+// Matrix3d fracture_plane(const vector<Vector3d>& coordinates, vector<unsigned int> id_vertex)
+// {
+//     Matrix3d FP;
+//     Vector3d p0 = coordinates[id_vertex[0]];
+//     Vector3d p1 = coordinates[id_vertex[1]];
+//     Vector3d p2 = coordinates[id_vertex[2]];
 
-    FP.row(0) = p0;
-    FP.row(1) = p2-p0;
-    FP.row(2) = p1-p0;
+//     FP.row(0) = p0;
+//     FP.row(1) = p2-p0;
+//     FP.row(2) = p1-p0;
 
-    return FP;
-}
+//     return FP;
+// }
 
 bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
 { // se il punto è più distante dall'inizio del segmento rispetto alla fine del segmento stesso allora il punto non appartiene al segmento
@@ -433,43 +433,44 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
     return false;
 }
 
-// riguardare questa funzione che è sbagliata
-// void TracesType(GeometryDFN& dfn)
-// {
-//     dfn.id_fracture_traces.reserve(dfn.Number_Fractures);
-//     for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
-//     {
-//         unsigned int number=0;
-//         for(unsigned int j = 0; j < dfn.Number_Traces; j++)
-//         {
-//             unsigned int fracture_id = i;
-//             if(fracture_id==dfn.Traces_Generator_Id[j][0] || fracture_id==dfn.Traces_Generator_Id[j][1])
-//             {
-//                 Vector2i fracture_type;
-//                 for(unsigned int k = 0; k<2; k++)  // itero sui due punti estremi della traccia in questione
-//                 {
-//                     Vector3d point = dfn.Traces_Coordinates[j][k];
-//                     bool result = true;
-//                     for(unsigned int l = 0; l<dfn.Fractures_Number_Vertices[i]; l++)
-//                     {
-//                         Vector3d point1 = dfn.Fractures_Vertices[i][l];
-//                         Vector3d point2 = dfn.Fractures_Vertices[i][(l+1)%dfn.Fractures_Number_Vertices[i]];
-//                         if(point_on_line(point1,point2,point))
-//                         {
-//                             result = false;
-//                         }
-//                     }
-//                     fracture_type[k] = result;
-//                 }
-//                 if(fracture_type[0]==false && fracture_type[1]==false)
-//                 {
-//                     dfn;
-//                 }
+//riguardare questa funzione che è sbagliata
+// cicla su ogni traccia e vedere da id traccia i due valori booleani delle fratture; se le due fratture generatrici passanti o no, peggio per riodinare
+void TracesType(GeometryDFN& dfn)
+{
+    dfn.id_fracture_traces.reserve(dfn.Number_Fractures);
+    for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
+    {
+        unsigned int number=0;
+        for(unsigned int j = 0; j < dfn.Number_Traces; j++)
+        {
+            unsigned int fracture_id = i;
+            if(fracture_id==dfn.Traces_Generator_Id[j][0] || fracture_id==dfn.Traces_Generator_Id[j][1])
+            {
+                Vector2i fracture_type;
+                for(unsigned int k = 0; k<2; k++)  // itero sui due punti estremi della traccia in questione
+                {
+                    Vector3d point = dfn.Traces_Coordinates[j][k];
+                    bool result = true;
+                    for(unsigned int l = 0; l<dfn.Fractures_Number_Vertices[i]; l++)
+                    {
+                        Vector3d point1 = dfn.Fractures_Vertices[i][l];
+                        Vector3d point2 = dfn.Fractures_Vertices[i][(l+1)%dfn.Fractures_Number_Vertices[i]];
+                        if(point_on_line(point1,point2,point))
+                        {
+                            result = false;
+                        }
+                    }
+                    fracture_type[k] = result;
+                }
+                if(fracture_type[0]==false && fracture_type[1]==false)
+                {
+                    dfn;
+                }
 
-//             }
-//         }
-//     }
-// }
+            }
+        }
+    }
+}
 
 vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
 {
@@ -511,5 +512,5 @@ vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& t
     }
 
 }
-
+// metti in ordine prima in base alla lunghezza e poi guardi i booleani
 
