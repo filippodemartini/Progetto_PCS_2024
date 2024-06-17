@@ -20,9 +20,8 @@ int main()
     FindTraces(dfn);
     for(unsigned int i = 0; i<dfn.Number_Traces; i++)
     {
-        cout << "ID: " << dfn.Traces_Id[i] << "Id intersecanti: " << dfn.Traces_Generator_Id[i][0] << ";" << dfn.Traces_Generator_Id[i][1]
-             << " Coordinate: " << dfn.Traces_Coordinates[i][0] << ";" << dfn.Traces_Coordinates[i][1] << ";" <<
-            dfn.Traces_Coordinates[i][2] << endl;
+        cout << " ID: " << dfn.Traces_Id[i] << " Id intersecanti: " << dfn.Traces_Generator_Id[i][0] << ";" << dfn.Traces_Generator_Id[i][1]
+             << " Coordinate: " << dfn.Traces_Coordinates[i][0] << ";" << dfn.Traces_Coordinates[i][1] << endl;
     }
 
     // for(unsigned int i = 0; i<dfn.Number_Fractures; i++){

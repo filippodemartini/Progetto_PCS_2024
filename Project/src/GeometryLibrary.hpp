@@ -24,7 +24,7 @@ struct GeometryDFN
     map<unsigned int, array<Vector3d,2>> Traces_Coordinates;
     vector<double> traces_length = {};
     map<unsigned int, array<bool,2>> Traces_Tips = {};
-    vector<unsigned int> id_fracture_traces = {};
+    //vector<unsigned int> id_fracture_traces = {};
 
     //double tol = numeric_limits<double>::epsilon();
 };
