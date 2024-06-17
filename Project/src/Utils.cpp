@@ -1,10 +1,12 @@
 #include "Utils.hpp"
 #include <iostream>
+#include <array>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <vector>
 #include "Eigen/Eigen"
+#include "Eigen/Dense"
 #include "MergeSort.hpp"
 
 using namespace std;
@@ -243,7 +245,7 @@ void FindTraces(GeometryDFN& dfn)
 
                         Vector2d alpha_beta = A.householderQr().solve(b);
 
-                        if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
+                        if(alpha_beta[0]>-tol && alpha_beta[0]<1+tol && num_traces_points < 2)
                         {//controllo che non prenda due volte lo stesso punto
                             Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
                             if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]))
@@ -289,7 +291,7 @@ void FindTraces(GeometryDFN& dfn)
 
                         Vector2d alpha_beta = A.householderQr().solve(b);
 
-                        if(-tol < alpha_beta[0] < 1+tol && num_traces_points < 2)
+                        if(alpha_beta[0]>-tol && alpha_beta[0]<1+tol && num_traces_points < 2)
                         {
                             Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
                             if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[i]))
@@ -437,8 +439,8 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 // cicla su ogni traccia e vedere da id traccia i due valori booleani delle fratture; se le due fratture generatrici passanti o no, peggio per riodinare
 void TracesType(GeometryDFN& dfn)
 {
-    dfn.id_fracture_traces.reserve(dfn.Number_Fractures);
-    for(unsigned int i = 0; i < dfn.Number_Fractures; i++)
+    //dfn.Traces_Id.reserve(dfn.Number_Traces);
+    for(unsigned int i = 0; i < dfn.Number_Traces; i++)
     {
         unsigned int number=0;
         for(unsigned int j = 0; j < dfn.Number_Traces; j++)
@@ -471,6 +473,100 @@ void TracesType(GeometryDFN& dfn)
         }
     }
 }
+
+
+void calcolaTipologiaTracce(GeometryDFN& DFN) {
+    //DFN.Traces_Tips.resize(DFN.Number_Fractures); // Assicura che tipoTraccia abbia la dimensione corretta
+    for (unsigned int k = 0; k < DFN.Number_Fractures; k++) { // ciclo sulle Fratture
+        array<bool, 2> presenzaTracce = {false, false};
+        unsigned int tracceCount = 0; // Contatore per tracce per la frattura k
+        for (unsigned int i = 0; i < DFN.Number_Traces; i++) { // ciclo sulle tracce
+            int idFrattura = k;
+            if (idFrattura == DFN.Traces_Generator_Id[i][0] || idFrattura == DFN.Traces_Generator_Id[i][1]) {
+                array<bool, 2> tipologia = {true, true};
+                for (unsigned int j = 0; j < 2; j++) {
+                    Vector3d p_traccia = DFN.Traces_Coordinates[i][j];
+                    for (unsigned int l = 0; l < DFN.Fractures_Vertices[k].size(); l++) {
+                        Vector3d p1 = DFN.Fractures_Vertices[k][l];
+                        Vector3d p2;
+                        if (l + 1 < DFN.Fractures_Vertices[k].size()) {
+                            p2 = DFN.Fractures_Vertices[k][l + 1];
+                        } else {
+                            p2 = DFN.Fractures_Vertices[k][0];
+                        }
+                        if (point_on_line(p1, p2, p_traccia)) {
+                            tipologia[j] = false;
+                            break;
+                        }
+                    }
+                }
+                if (tipologia[0] == false && tipologia[1] == false) {
+                    DFN.Traces_Tips[k][tracceCount] = {false};
+                    presenzaTracce[0] = true;
+                } else {
+                    DFN.Traces_Tips[k][tracceCount] = {true};
+                    presenzaTracce[1] = true;
+                }
+                tracceCount++;
+            }
+        }
+        if (presenzaTracce[0] || presenzaTracce[1]) {
+            DFN.Traces_Tips[k] = presenzaTracce;
+        }
+    }
+}
+
+
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     for (unsigned int k = 0; k < DFN.Number_Fractures; k++) { // ciclo sulle Fratture
+//         array<bool, 2> presenzaTracce = {false, false};
+//         for (unsigned int i = 0; i < DFN.Number_Traces; i++) { // ciclo sulle tracce
+//             if (isFratturaIntersecante(k, i, DFN)) {
+//                 array<bool, 2> tipologia = getTipologia(i, k, DFN);
+//                 if (tipologia[0] == false && tipologia[1] == false) {
+//                     DFN.Traces_Tips[k].push_back({i, false});
+//                     presenzaTracce[0] = true;
+//                 } else {
+//                     DFN.Traces_Tips[k].emplace_back(i, true);
+//                     presenzaTracce[1] = true;
+//                 }
+//             }
+//         }
+//         if (presenzaTracce[0] || presenzaTracce[1]) {
+//             DFN.Id_FrattureConTraccia[k] = presenzaTracce;
+//         }
+//     }
+// }
+
+// bool isFratturaIntersecante(unsigned int k, unsigned int i, GeometryDFN& DFN) {
+//     int idFrattura = k;
+//     return idFrattura == DFN.Traces_Generator_Id[i][0] || idFrattura == DFN.Traces_Generator_Id[i][1];
+// }
+
+// array<bool, 2> getTipologia(unsigned int i, unsigned int k, GeometryDFN& DFN) {
+//     array<bool, 2> tipologia;
+//     for (unsigned int j = 0; j < 2; j++) {
+//         Vector3d p_traccia = DFN.Traces_Coordinates[i][j];
+//         bool risposta = true;
+//         // prendere due vertici consecutivi
+//         for (unsigned int l = 0; l < DFN.Fractures_Number_Vertices[k]; l++) {
+//             Vector3d p1 = DFN.Fractures_Vertices[k][l];
+//             Vector3d p2;
+//             if (l + 1 < DFN.Fractures_Number_Vertices[k]) {
+//                 p2 = DFN.Fractures_Vertices[k][l + 1];
+//             } else {
+//                 p2 = DFN.Fractures_Vertices[k][0];
+//             }
+//             if (point_on_line(p1, p2, p_traccia)) {
+//                 risposta = false;
+//                 break;
+//             }
+//         }
+//         tipologia[j] = risposta;
+//     }
+//     return tipologia;
+// }
+
 
 vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
 {
@@ -511,6 +607,6 @@ vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& t
     return sorted;
     }
 
-}
+ }
 // metti in ordine prima in base alla lunghezza e poi guardi i booleani
 

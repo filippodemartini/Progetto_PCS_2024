@@ -31,6 +31,12 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 
 bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
+void calcolaTipologiaTracce(GeometryDFN& DFN);
+
+//bool isFratturaIntersecante(unsigned int k, unsigned int i, const GeometryDFN& DFN);
+
+//std::array<bool, 2> getTipologia(unsigned int i, unsigned int k, GeometryDFN& DFN);
+
 //inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);
 
 //inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection);
