@@ -24,6 +24,15 @@ int main()
              << " Coordinate: " << dfn.Traces_Coordinates[i][0] << ";" << dfn.Traces_Coordinates[i][1] << endl;
     }
 
+
+    calcolaTipologiaTracce(dfn);
+    for (auto it = dfn.Traces_Tips.begin(); it != dfn.Traces_Tips.end(); ++it) {
+        unsigned int id_traccia = it->first;
+        array<bool, 2> frattura = it->second;
+
+        cout << "ID traccia: " << id_traccia << ", prima frattura generatrice: " << frattura[0] << " , seconda frattura generatrice: " << frattura[1] << endl;
+    }
+
     // for(unsigned int i = 0; i<dfn.Number_Fractures; i++){
     // Vector3d barycentre = FindBarycentre(dfn.Fractures_Vertices[i]);
 
