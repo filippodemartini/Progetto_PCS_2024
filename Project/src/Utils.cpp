@@ -383,23 +383,46 @@ void FindTraces(GeometryDFN& dfn)
 //     return FP;
 // }
 
+
 bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
 { // se il punto è più distante dall'inizio del segmento rispetto alla fine del segmento stesso allora il punto non appartiene al segmento
-    bool on_line = false;
+    //bool on_line = false;
 
     double tol = numeric_limits<double>::epsilon();
     double line_length = (line_origin - line_end).norm();
     double distance_point_origin = (line_origin - point).norm();
     double distance_point_end = (line_end - point).norm();
-    double difference = distance_point_origin + distance_point_end - line_length;
+    //double difference = distance_point_origin + distance_point_end - line_length;
 
-    if(abs(difference)<tol)
-    {
-        on_line = true;
-    }
+    //if(abs(difference)<tol)
+    //{
+    //  on_line = true;
+    //}
 
-    return on_line;
+    //return on_line;
+    // oppure potremmo togliere questo if e mettere solamente
+    return abs((distance_point_origin +distance_point_end)-line_length)<tol;
 }
+
+// QUELLA CHE AVEVAMO PRIMA
+// bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
+// { // se il punto è più distante dall'inizio del segmento rispetto alla fine del segmento stesso allora il punto non appartiene al segmento
+//     bool on_line = false;
+
+//     double tol = numeric_limits<double>::epsilon();
+//     double line_length = (line_origin - line_end).norm();
+//     double distance_point_origin = (line_origin - point).norm();
+//     double distance_point_end = (line_end - point).norm();
+//     double difference = distance_point_origin + distance_point_end - line_length;
+
+//     if(abs(difference)<tol)
+//     {
+//         on_line = true;
+//     }
+
+//     return on_line;
+// }
+
 
 bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3)
 {
@@ -407,20 +430,25 @@ bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector
     Vector3d vector1 = p1-p2;
     Vector3d vector2 = p1-p0;
 
-    double dot00 = vector0.dot(vector0);
-    double dot01 = vector0.dot(vector1);
-    double dot02 = vector0.dot(vector2);
-    double dot11 = vector1.dot(vector1);
-    double dot12 = vector1.dot(vector2);
+    double dotProductMatrix[2][2]={
+        {vector0.dot(vector0), vector0.dot(vector1)},
+        {vector0.dot(vector1), vector1.dot(vector1)}
+    };
 
-    double barycentre_coord1 = (1 / (dot00*dot11 - dot01*dot01)) * (dot11*dot02 - dot01*dot12);
-    double barycentre_coord2 = (1 / (dot00*dot11 - dot01*dot01)) * (dot00*dot12 - dot01*dot02);
-
-    if ((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1))  // questi sono gli alfa0 e alfa1 di geom comp
-    {
-        return true;
+    // double dot00 = vector0.dot(vector0);
+    // double dot01 = vector0.dot(vector1);
+    // double dot02 = vector0.dot(vector2);
+    // double dot11 = vector1.dot(vector1);
+    // double dot12 = vector1.dot(vector2);
+    double det = dotProductMatrix[0][0]*dotProductMatrix[1][1]-dotProductMatrix[0][1]*dotProductMatrix[1][0];
+    if (det==0){
+        return false;
     }
-    return false;
+
+    double barycentre_coord1 = (1 / det) * (dotProductMatrix[1][1]*vector0.dot(vector2)-dotProductMatrix[0][1]*vector1.dot(vector2));
+    double barycentre_coord2 = (1 / det) * (dotProductMatrix[0][0]*vector1.dot(vector2)-dotProductMatrix[0][1]*vector0.dot(vector2));
+
+    return((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1));  // questi sono gli alfa0 e alfa1 di geom comp
 }
 
 bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_vertex)
@@ -434,6 +462,41 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
     }
     return false;
 }
+
+// QUELLA CHE AVEVAMO PRIMA
+// bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3)
+// {
+//     Vector3d vector0 = p1-p3;
+//     Vector3d vector1 = p1-p2;
+//     Vector3d vector2 = p1-p0;
+
+//     double dot00 = vector0.dot(vector0);
+//     double dot01 = vector0.dot(vector1);
+//     double dot02 = vector0.dot(vector2);
+//     double dot11 = vector1.dot(vector1);
+//     double dot12 = vector1.dot(vector2);
+
+//     double barycentre_coord1 = (1 / (dot00*dot11 - dot01*dot01)) * (dot11*dot02 - dot01*dot12);
+//     double barycentre_coord2 = (1 / (dot00*dot11 - dot01*dot01)) * (dot00*dot12 - dot01*dot02);
+
+//     if ((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1))  // questi sono gli alfa0 e alfa1 di geom comp
+//     {
+//         return true;
+//     }
+//     return false;
+// }
+
+// bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_vertex)
+// {
+//     for(unsigned int i = 0; i < fracture_vertex.size()-1; i++)
+//     {
+//         if(check_barycentre_coord(point, fracture_vertex[0], fracture_vertex[i], fracture_vertex[i+1]))
+//         {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
 //riguardare questa funzione che è sbagliata
 // cicla su ogni traccia e vedere da id traccia i due valori booleani delle fratture; se le due fratture generatrici passanti o no, peggio per riodinare
@@ -476,17 +539,54 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 // }
 
 
-void calcolaTipologiaTracce(GeometryDFN& DFN) {
-    //DFN.Traces_Tips.resize(DFN.Number_Fractures); // Assicura che tipoTraccia abbia la dimensione corretta
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     for (auto it = DFN.Traces_Tips.begin(); it != DFN.Traces_Tips.end(); ++it) {
+//         unsigned int id_traccia = it->first;
+//         array<bool, 2> tipologiaTracce = it->second;
+
+//         for (unsigned int j = 0; j < 2; j++) { // ciclo sui due estremi della traccia
+//             Vector3d p_traccia = DFN.Traces_Coordinates[it->first][j];
+
+
+
+//                 if (DFN.Traces_Id == DFN.Traces_Generator_Id[it->first][0] || DFN.Traces_Id == DFN.Traces_Generator_Id[it->first][1]) { // Verifica frattura
+//                     for (unsigned int l = 0; l < DFN.Fractures_Vertices[i].size(); l++) {
+//                         Vector3d p1 = DFN.Fractures_Vertices[i][l];
+//                         Vector3d p2;
+//                         if (l + 1 < DFN.Fractures_Vertices[i].size()) {
+//                             p2 = DFN.Fractures_Vertices[i][l + 1];
+//                         } else {
+//                             p2 = DFN.Fractures_Vertices[i][0];
+//                         }
+//                         if (point_on_line(p1, p2, p_traccia)) {
+//                             tipologiaTracce[j] = false; // È passante
+//                             break;
+//                         }
+//                         else{
+//                             tipologiaTracce[j] = true;
+//                         }
+//                     }
+//                 }
+//                 if (!tipologiaTracce[j]) break; // Se già determinato come passante, esci dal ciclo
+//             }
+//         }
+
+//         // Assegna i risultati a Traces_Tips
+//         DFN.Traces_Tips[it->first] = tipologiaTracce;
+//     }
+// }
+
+
+/*void calcolaTipologiaTracce(GeometryDFN& DFN) {
     for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
-        array<bool, 2> presenzaTracce = {false,false};
-        unsigned int tracceCount = 0; // Contatore per tracce per la frattura k
-        for (unsigned int i = 0; i < DFN.Number_Fractures; i++) { // ciclo sulle fratture
-            int idFrattura = i;
-            if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
-                array<bool, 2> tipologia = {true,true};
-                for (unsigned int j = 0; j < 2; j++) {
-                    Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+        array<bool, 2> tipologiaTracce = {true, true}; // Assume non passante all'inizio
+
+        for (unsigned int j = 0; j < 2; j++) { // ciclo sui due estremi della traccia
+            Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+
+            for (unsigned int i = 0; i < DFN.Number_Fractures; i++) { // ciclo sulle fratture
+                int idFrattura = i;
+                if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) { // Verifica frattura
                     for (unsigned int l = 0; l < DFN.Fractures_Vertices[i].size(); l++) {
                         Vector3d p1 = DFN.Fractures_Vertices[i][l];
                         Vector3d p2;
@@ -496,26 +596,92 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
                             p2 = DFN.Fractures_Vertices[i][0];
                         }
                         if (point_on_line(p1, p2, p_traccia)) {
-                            tipologia[j] = false;
+                            tipologiaTracce[j] = false; // È passante
+                            break;
+                        }
+                        else{
+                            tipologiaTracce[j] = true;
+                        }
+                    }
+                }
+                if (!tipologiaTracce[j]) break; // Se già determinato come passante, esci dal ciclo
+            }
+        }
+
+        // Assegna i risultati a Traces_Tips
+        DFN.Traces_Tips[k] = tipologiaTracce;
+    }
+}*/
+
+// PROVA GIUSTAAAAAAAAAAAAAAAAAAAAA
+void calcolaTipologiaTracce(GeometryDFN& DFN) {
+    for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
+        unsigned int i = fracture_entry.first;
+        const vector<Vector3d>& vertices = fracture_entry.second;
+        for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+            int idFrattura = i;
+            if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+                array<bool, 2> tipologia = {true, true};
+                for (unsigned int j = 0; j < 2; j++) {
+                    Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+                    for (unsigned int l = 0; l < vertices.size(); l++) {
+                        Vector3d p1 = vertices[l];
+                        Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
+                        if (point_on_line(p1, p2, p_traccia)) {
+                            tipologia[j] = false; // La traccia è passante
                             break;
                         }
                     }
                 }
-                if (tipologia[0] == false && tipologia[1] == false) {
-                    DFN.Traces_Tips[k][tracceCount] = {false};
-                    presenzaTracce[0] = true;
-                } else {
-                    DFN.Traces_Tips[k][tracceCount] = {true};
-                    presenzaTracce[1] = false;
-                }
-                tracceCount++;
+                DFN.Traces_Tips[k][0] = !tipologia[0] && !tipologia[1]; // La traccia è passante se entrambe sono false
+                DFN.Traces_Tips[k][1] = tipologia[0] || tipologia[1];  // La traccia non è passante se almeno una è true
+
             }
-        }
-        if (presenzaTracce[0] || presenzaTracce[1]) {
-            DFN.Traces_Tips[k] = presenzaTracce;
         }
     }
 }
+
+
+
+// DECENTE
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     //DFN.Traces_Tips.resize(DFN.Number_Fractures); // Assicura che tipoTraccia abbia la dimensione corretta
+//     for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+//         //array<bool, 2> presenzaTracce = {};
+//         unsigned int tracceCount = 0; // Contatore per tracce per la frattura k
+//         for (unsigned int i = 0; i < DFN.Number_Fractures; i++) { // ciclo sulle fratture
+//             int idFrattura = i;
+//             if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+//                 array<bool, 2> tipologia = {};
+//                 for (unsigned int j = 0; j < 2; j++) {
+//                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+//                     for (unsigned int l = 0; l < DFN.Fractures_Vertices[i].size(); l++) {
+//                         Vector3d p1 = DFN.Fractures_Vertices[i][l];
+//                         Vector3d p2;
+//                         if (l + 1 < DFN.Fractures_Vertices[i].size()) {
+//                             p2 = DFN.Fractures_Vertices[i][l + 1];
+//                         } else {
+//                             p2 = DFN.Fractures_Vertices[i][0];
+//                         }
+//                         if (point_on_line(p1, p2, p_traccia)) {
+//                             tipologia[j] = false;
+//                             break;
+//                         }
+//                     }
+//                 }
+//                 if (tipologia[0] == false && tipologia[1] == false) {
+//                     DFN.Traces_Tips[k][tracceCount] = {false};
+//                     //presenzaTracce[0] = true;
+//                 } else {
+//                     DFN.Traces_Tips[k][tracceCount] = {true};
+//                     //presenzaTracce[1] = true;
+//                 }
+//                 tracceCount++;
+//             }
+//         }
+
+//     }
+// }
 
 // QUELLA CHE AVEVAMO PRIMA
 // void calcolaTipologiaTracce(GeometryDFN& DFN) {
@@ -612,7 +778,35 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
 // }
 
 
-vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
+void calcolaLunghezzaTracce(GeometryDFN& DFN)
+{
+    // DFN.traces_length.resize(DFN.Number_Traces);
+    // unsigned int index = 0;
+
+    for (auto& entry : DFN.Traces_Coordinates) {
+        double lunghezza = (entry.second[1] - entry.second[0]).norm();
+        DFN.traces_length.push_back(lunghezza);
+        DFN.Traces_Id.push_back(entry.first);
+    }
+
+    DFN.Traces_Tips = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
+
+    //vector<unsigned int> trace_id;
+    // for (const auto& item : DFN.Traces_Tips) {
+
+    // }
+    // for(auto& entry : DFN.Traces_Tips)
+    // {
+    //     entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
+    // }
+    //entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, trace_id);
+
+    }
+}
+
+
+//vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
+map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id)
 {
     vector<pair<int,double>> pairLengthID;
     for (unsigned int i=0; i<length.size();i++)
@@ -621,36 +815,49 @@ vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& t
     }
     SortLibrary::MergeSort(pairLengthID);
 
-    vector<Vector2i> passante;
-    vector<Vector2i> non_passante;
+    vector<array<bool, 2>> passante;
+    vector<array<bool, 2>> non_passante;
     for (unsigned int i=0; i<pairLengthID.size();i++)
     {
-       for (unsigned int j=0; j<type.size(); j++)
+       unsigned int index = pairLengthID[i].first;  // indice della traccia
+       unsigned int t_id = trace_id[index];
+
+
+       if (type.at(t_id)[1]==false)
+       {
+           passante.push_back(type.at(t_id));
+       }
+        else if (type.at(t_id)[1]==true)
         {
-            if (type[j][1]==false && type[j][0]== pairLengthID[i].first)
-           {
-               passante.push_back(type[j]);
-                break;
-           }
-            else if (type[j][1]==true && type[j][0]== pairLengthID[i].first)
-            {
-                non_passante.push_back(type[j]);
-               break;
-            }
+           non_passante.push_back(type.at(t_id));
         }
+
     }
-    vector<Vector2i>sorted;
-    for(unsigned int i=0; i<passante.size();i++)
+    map<unsigned int,array<bool,2>> sorted;
+    unsigned int passanteIdx = 0, nonPassanteIdx = 0;
+
+    // Riempie il map con le tracce passanti
+    for (unsigned int i = 0; i < passante.size(); i++)
     {
-        sorted.push_back(passante[i]);
-    }
-    for(unsigned int i=0; i<non_passante.size();i++)
-    {
-        sorted.push_back(non_passante[i]);
-    }
-    return sorted;
+        unsigned int index = pairLengthID[i].first; // indice della traccia
+        unsigned int t_id = trace_id[index];
+        sorted[t_id] = passante[passanteIdx++];
     }
 
- }
+    // Riempie il map con le tracce non passanti
+    for (unsigned int i = 0; i < non_passante.size(); i++)
+    {
+        unsigned int index = pairLengthID[passante.size() + i].first; // indice della traccia
+        unsigned int t_id = trace_id[index];
+        sorted[t_id] = non_passante[nonPassanteIdx++];
+    }
+
+    return sorted;
+    // sorted.insert(sorted.end(),passante.begin(),passante.end());
+    // sorted.insert(sorted.end(),non_passante.begin(),non_passante.end());
+}
+
+
+
 // metti in ordine prima in base alla lunghezza e poi guardi i booleani
 
