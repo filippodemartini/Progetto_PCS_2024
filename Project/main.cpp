@@ -24,13 +24,46 @@ int main()
              << " Coordinate: " << dfn.Traces_Coordinates[i][0] << ";" << dfn.Traces_Coordinates[i][1] << endl;
     }
 
-
     calcolaTipologiaTracce(dfn);
-    for (auto it = dfn.Traces_Tips.begin(); it != dfn.Traces_Tips.end(); ++it) {
-        unsigned int id_traccia = it->first;
-        array<bool, 2> frattura = it->second;
+    map<unsigned int, vector<string>> fratture_tracce;
 
-        cout << "ID traccia: " << id_traccia << ", prima frattura generatrice: " << frattura[0] << " , seconda frattura generatrice: " << frattura[1] << endl;
+    for (unsigned int k = 0; k < dfn.Number_Traces; k++) {
+        for (unsigned int i = 0; i < dfn.Number_Fractures; i++) {
+            if (i == dfn.Traces_Generator_Id[k][0] || i == dfn.Traces_Generator_Id[k][1]) {
+                string tipo_traccia;
+                if (dfn.Traces_Tips[k][0]) {
+                    tipo_traccia = "non passante";
+                } else {
+                    tipo_traccia = "passante";
+                }
+                fratture_tracce[i].push_back("traccia tipo " + tipo_traccia);
+            }
+        }
+    }
+
+    for (const auto& entry : fratture_tracce) {
+        unsigned int frattura_id = entry.first;
+        const vector<string>& tracce = entry.second;
+        cout << "Frattura " << frattura_id << ": ";
+        for (const string& traccia : tracce) {
+            cout << traccia << " ";
+        }
+        cout << endl;
+    }
+
+    // calcolaLunghezzaTracce(dfn);
+
+    // cout << "Lunghezze delle tracce:" << endl;
+    // for (const auto& lunghezza : dfn.traces_length) {
+    //     cout << lunghezza << endl;
+    // }
+
+    calcolaLunghezzaTracce(dfn);
+
+    cout << "Risultati di Traces_Tips dopo il calcolo delle lunghezze e il riordino:" << endl;
+    for (const auto& entry : dfn.Traces_Tips)
+    {
+        cout << "ID Traccia: " << entry.first << ", Passante: " << entry.second[0] << ", Non Passante: " << entry.second[1] << endl;
     }
 
     // for(unsigned int i = 0; i<dfn.Number_Fractures; i++){
