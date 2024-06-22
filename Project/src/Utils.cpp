@@ -778,32 +778,6 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
 // }
 
 
-void calcolaLunghezzaTracce(GeometryDFN& DFN)
-{
-    // DFN.traces_length.resize(DFN.Number_Traces);
-    // unsigned int index = 0;
-
-    for (auto& entry : DFN.Traces_Coordinates) {
-        double lunghezza = (entry.second[1] - entry.second[0]).norm();
-        DFN.traces_length.push_back(lunghezza);
-        DFN.Traces_Id.push_back(entry.first);
-    }
-
-    DFN.Traces_Tips = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
-
-    //vector<unsigned int> trace_id;
-    // for (const auto& item : DFN.Traces_Tips) {
-
-    // }
-    // for(auto& entry : DFN.Traces_Tips)
-    // {
-    //     entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
-    // }
-    //entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, trace_id);
-
-    }
-}
-
 
 //vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
 map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id)
@@ -857,6 +831,31 @@ map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, ma
     // sorted.insert(sorted.end(),non_passante.begin(),non_passante.end());
 }
 
+void calcolaLunghezzaTracce(GeometryDFN& DFN)
+{
+    // DFN.traces_length.resize(DFN.Number_Traces);
+    // unsigned int index = 0;
+
+    for (auto& entry : DFN.Traces_Coordinates) {
+        double lunghezza = (entry.second[1] - entry.second[0]).norm();
+        DFN.traces_length.push_back(lunghezza);
+        DFN.Traces_Id.push_back(entry.first);
+    }
+
+    DFN.Traces_Tips = GeometryLibrary::riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
+
+    //vector<unsigned int> trace_id;
+    // for (const auto& item : DFN.Traces_Tips) {
+
+    // }
+    // for(auto& entry : DFN.Traces_Tips)
+    // {
+    //     entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
+    // }
+    //entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, trace_id);
+
+}
+}
 
 
 // metti in ordine prima in base alla lunghezza e poi guardi i booleani
