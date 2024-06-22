@@ -10,7 +10,7 @@ using namespace GeometryLibrary;
 int main()
 {
     GeometryDFN dfn;
-    string filename = "./FR3_data.txt";
+    string filename = "./FR82_data.txt";
     if(!ImportFractures(filename, dfn)){
         return 1;
     }
@@ -51,12 +51,12 @@ int main()
         cout << endl;
     }
 
-    // calcolaLunghezzaTracce(dfn);
+    calcolaLunghezzaTracce(dfn);
 
-    // cout << "Lunghezze delle tracce:" << endl;
-    // for (const auto& lunghezza : dfn.traces_length) {
-    //     cout << lunghezza << endl;
-    // }
+    cout << "Lunghezze delle tracce:" << endl;
+    for (const auto& lunghezza : dfn.traces_length) {
+        cout << lunghezza << endl;
+    }
 
     calcolaLunghezzaTracce(dfn);
 
