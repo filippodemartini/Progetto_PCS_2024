@@ -794,10 +794,10 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
 //vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
 map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id)
 {
-    vector<pair<int,double>> pairLengthID;
+    vector<pair<double,int>> pairLengthID;
     for (unsigned int i=0; i<length.size();i++)
     {
-        pairLengthID.push_back({i,length[i]});
+        pairLengthID.push_back({length[i],i});
     }
     SortLibrary::MergeSort(pairLengthID);
 
