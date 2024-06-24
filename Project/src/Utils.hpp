@@ -37,6 +37,10 @@ map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, ma
 
 void calcolaLunghezzaTracce(GeometryDFN& DFN);
 
+bool OutputTracce(const GeometryDFN& DFN, const string& fileOutput);
+
+bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput);
+
 //void lengthTraces(GeometryDFN& DFN);
 
 //bool isFratturaIntersecante(unsigned int k, unsigned int i, const GeometryDFN& DFN);

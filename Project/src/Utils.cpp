@@ -384,14 +384,26 @@ void FindTraces(GeometryDFN& dfn)
 // }
 
 
-bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
+bool point_on_line(Vector3d& p1, Vector3d& p2, Vector3d& p3)
 { // se il punto è più distante dall'inizio del segmento rispetto alla fine del segmento stesso allora il punto non appartiene al segmento
     //bool on_line = false;
 
-    double tol = numeric_limits<double>::epsilon();
-    double line_length = (line_origin - line_end).norm();
-    double distance_point_origin = (line_origin - point).norm();
-    double distance_point_end = (line_end - point).norm();
+    // QUELLO CHE AVEVAMO PRIMA
+    // double tol = numeric_limits<double>::epsilon();
+    // double line_length = (line_origin - line_end).norm();
+    // double distance_point_origin = (line_origin - point).norm();
+    // double distance_point_end = (line_end - point).norm();
+
+    Vector3d prodotto_Vettoriale = (p2-p1).cross(p3-p1);
+    // Controllo se il punto p3 è sulla stessa retta dei punti p1 e p2 che rappresentano due vertici consecutivi della Frattura
+    // Ovvero controllo che i tre punti siano collineari
+    if (fabs(prodotto_Vettoriale[0]) < 1e-12 && fabs(prodotto_Vettoriale[1]) < 1e-12 && fabs(prodotto_Vettoriale[2]) < 1e-12)
+    {
+        return ((p3[0] >= min(p1[0], p2[0]) && p3[0] <= max(p1[0], p2[0]) &&
+                 p3[1] >= min(p1[1], p2[1]) && p3[1] <= max(p1[1], p2[1]) &&
+                 p3[2] >= min(p1[2], p2[2]) && p3[2] <= max(p1[2], p2[2])));
+    }
+    return false;
     //double difference = distance_point_origin + distance_point_end - line_length;
 
     //if(abs(difference)<tol)
@@ -401,7 +413,7 @@ bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point)
 
     //return on_line;
     // oppure potremmo togliere questo if e mettere solamente
-    return abs((distance_point_origin +distance_point_end)-line_length)<tol;
+    //return abs((distance_point_origin +distance_point_end)-line_length)<tol;
 }
 
 // QUELLA CHE AVEVAMO PRIMA
@@ -855,6 +867,140 @@ void calcolaLunghezzaTracce(GeometryDFN& DFN)
     //entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, trace_id);
 
 }
+
+bool OutputTracce(const GeometryDFN& DFN, const string& fileOutput)
+{
+    ofstream file;
+    file.open(fileOutput);
+    if (file.fail())
+    {
+        cerr << "errore nell'aprire il file di output: " << fileOutput << endl;
+        return false;
+    }
+    file << "# Number of Traces" << endl;
+    file.precision(16);
+    file << scientific;
+    file << DFN.Number_Traces << endl;
+    file << "# TraceId; FractureId1; FractureId2; X1; Y1; Z1; X2; Y2; Z2" << endl;
+
+    for (unsigned int i = 0; i < DFN.Number_Traces; i++)
+    {
+        unsigned int traceId = DFN.Traces_Id[i];
+        Vector2i fractureIds = DFN.Traces_Generator_Id[i];
+        array<Vector3d, 2> coordinates = DFN.Traces_Coordinates.at(traceId);
+
+        file << traceId << "; " << fractureIds[0] << "; " << fractureIds[1] << "; "
+             << coordinates[0][0] << "; " << coordinates[0][1] << "; " << coordinates[0][2] << "; "
+             << coordinates[1][0] << "; " << coordinates[1][1] << "; " << coordinates[1][2] << endl;
+    }
+    file.close();
+    return true;
+}
+
+
+bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
+{
+    ofstream file;
+    file.open(fileOutput);
+    if (file.fail())
+    {
+        cerr << "errore nell'aprire il file di output: " << fileOutput << endl;
+        return false;
+    }
+    file.precision(16);
+    file << scientific;
+
+    for (unsigned int i = 0; i < DFN.Number_Fractures; i++)
+    {
+        unsigned int fractureId = DFN.Fractures_Id[i];
+        vector<unsigned int> traceIds;
+
+        for (unsigned int j = 0; j < DFN.Number_Traces; j++)
+        {
+            Vector2i fractureIds = DFN.Traces_Generator_Id[j];
+            if (fractureIds[0] == fractureId || fractureIds[1] == fractureId)
+            {
+                traceIds.push_back(DFN.Traces_Id[j]);
+            }
+        }
+
+        if (!traceIds.empty())
+        {
+            file << "# FractureId; NumTraces" << endl;
+            file << fractureId << "; " << traceIds.size() << endl;
+            file << "# TraceId; Tips; Length" << endl;
+
+            for (const auto& traceId : traceIds)
+            {
+                array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+                double length = DFN.traces_length[traceId];
+
+
+
+                // Determinare se è passante o non passante
+                //int tipType = (tips[0] && tips[1]) ? 1 : 0;
+                int tipType;
+                if (tips[0] && tips[1]) {
+                    tipType = 1;
+                } else {
+                    tipType = 0;
+                }
+
+                file << traceId << "; " << tipType << "; " << length << endl;
+            }
+        }
+    }
+    file.close();
+    return true;
+}
+
+
+// bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
+// {
+//     ofstream file;
+//     file.open(fileOutput);
+//     if (file.fail())
+//     {
+//         cerr << "errore nell'aprire il file di output: " << fileOutput << endl;
+//         return false;
+//     }
+//     file.precision(16);
+//     file << scientific;
+
+//     for (unsigned int i = 0; i < DFN.Number_Fractures; i++)
+//     {
+//         unsigned int fractureId = DFN.Fractures_Id[i];
+//         vector<unsigned int> traceIds;
+
+//         for (unsigned int j = 0; j < DFN.Number_Traces; j++)
+//         {
+//             Vector2i fractureIds = DFN.Traces_Generator_Id[j];
+//             if (fractureIds[0] == fractureId || fractureIds[1] == fractureId)
+//             {
+//                 traceIds.push_back(DFN.Traces_Id[j]);
+//             }
+//         }
+
+//         if (!traceIds.empty())
+//         {
+//             file << "# FractureId; NumTraces" << endl;
+//             file << fractureId << "; " << traceIds.size() << endl;
+//             file << "# TraceId; Tips; Length" << endl;
+
+//             for (const auto& traceId : traceIds)
+//             {
+//                 array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+//                 double length = DFN.traces_length[traceId];
+//                 file << traceId << "; " << tips[0] << ", " << tips[1] << "; " << length << endl;
+//             }
+//         }
+//     }
+//     file.close();
+//     return true;
+// }
+
+
+
 }
 
 
