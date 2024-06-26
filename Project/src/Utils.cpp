@@ -626,13 +626,41 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 }*/
 
 // PROVA GIUSTAAAAAAAAAAAAAAAAAAAAA
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
+//         unsigned int i = fracture_entry.first;
+//         const vector<Vector3d>& vertices = fracture_entry.second;
+//         for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+//             int idFrattura = i;
+//             if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+//                 array<bool, 2> tipologia = {true, true};
+//                 for (unsigned int j = 0; j < 2; j++) {
+//                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+//                     for (unsigned int l = 0; l < vertices.size(); l++) {
+//                         Vector3d p1 = vertices[l];
+//                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
+//                         if (point_on_line(p1, p2, p_traccia)) {
+//                             tipologia[j] = false; // La traccia è passante
+//                             break;
+//                         }
+//                     }
+//                 }
+//                 DFN.Traces_Tips[k][0] = !tipologia[0] && !tipologia[1]; // La traccia è passante se entrambe sono false
+//                 DFN.Traces_Tips[k][1] = tipologia[0] || tipologia[1];  // La traccia non è passante se almeno una è true
+
+//             }
+//         }
+//     }
+// }
+
+// FUNZIONA QUASI PERFETTAMENTE
 void calcolaTipologiaTracce(GeometryDFN& DFN) {
     for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
         unsigned int i = fracture_entry.first;
         const vector<Vector3d>& vertices = fracture_entry.second;
         for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
             int idFrattura = i;
-            if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+            if (idFrattura == DFN.Traces_Generator_Id[k][0]) {
                 array<bool, 2> tipologia = {true, true};
                 for (unsigned int j = 0; j < 2; j++) {
                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
@@ -645,14 +673,69 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
                         }
                     }
                 }
-                DFN.Traces_Tips[k][0] = !tipologia[0] && !tipologia[1]; // La traccia è passante se entrambe sono false
-                DFN.Traces_Tips[k][1] = tipologia[0] || tipologia[1];  // La traccia non è passante se almeno una è true
-
+                if (tipologia[0]==false && tipologia[1]==false){
+                    DFN.Traces_Tips[k][0] = false; // La traccia è passante se entrambe sono false
+                }
+                else{
+                    DFN.Traces_Tips[k][0] = true;
+                }
             }
+            if ( idFrattura == DFN.Traces_Generator_Id[k][1]) {
+                array<bool, 2> tipologia = {true, true};
+                for (unsigned int j = 0; j < 2; j++) {
+                    Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+                    for (unsigned int l = 0; l < vertices.size(); l++) {
+                        Vector3d p1 = vertices[l];
+                        Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
+                        if (point_on_line(p1, p2, p_traccia)) {
+                            tipologia[j] = false; // La traccia è passante
+                            break;
+                        }
+                    }
+                }
+                if (tipologia[0]==false && tipologia[1]==false){
+                    DFN.Traces_Tips[k][1] = false; // La traccia è passante se entrambe sono false
+                }
+                else{
+                    DFN.Traces_Tips[k][1] = true;
+                }
+            }
+
         }
     }
 }
 
+
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
+//         unsigned int i = fracture_entry.first;
+//         const vector<Vector3d>& vertices = fracture_entry.second;
+//         for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+//             int idFrattura = i;
+//             if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+//                 array<bool, 2> tipologia = {true, true};
+
+//                 //Ciclo su tutti i vertici prendendoli a due due
+//                 for (unsigned int l = 0; l < vertices.size(); l++) {
+//                     //Prendo due vertici della frattura
+//                     Vector3d p1 = vertices[l];
+//                     Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
+
+//                     Vector3d pTraccia1 = DFN.Traces_Coordinates[k][0]; //Punto 1
+//                     Vector3d pTraccia2 = DFN.Traces_Coordinates[k][1];
+//                     //Verifico se il vertice della traccia è sul segmento della frattura delimitato dai due punti
+//                     tipologia[0] = point_on_line(p1,p2, pTraccia1); //tipologia[0] è true se il punto è sul segmento
+//                     tipologia[1] = point_on_line(p1,p2, pTraccia2); //tipologia[1] è true se il punto è sul segmento
+
+//                 }
+//                 //Basterebbe  DFN.Traces_Tips[k]?
+//                 DFN.Traces_Tips[k][0] = tipologia[0] || tipologia[1]; //Se una delle due è true allora la traccia non è passante
+
+
+//             }
+//         }
+//     }
+// }
 
 
 // DECENTE
