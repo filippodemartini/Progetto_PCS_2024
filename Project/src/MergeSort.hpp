@@ -21,7 +21,7 @@ void Merge(vector<T>& v,
 
     while( i <= cx && j <= dx)
     {
-        if (v[i] >= v[j])
+        if (v[i] <= v[j])
             b.push_back(v[i++]);
         else
             b.push_back(v[j++]);

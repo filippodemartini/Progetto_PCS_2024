@@ -662,6 +662,7 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
             int idFrattura = i;
             if (idFrattura == DFN.Traces_Generator_Id[k][0]) {
                 array<bool, 2> tipologia = {true, true};
+                //unsigned int contatore1 = 0;
                 for (unsigned int j = 0; j < 2; j++) {
                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
                     for (unsigned int l = 0; l < vertices.size(); l++) {
@@ -669,6 +670,7 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
                         if (point_on_line(p1, p2, p_traccia)) {
                             tipologia[j] = false; // La traccia è passante
+                            //contatore1 += 1;
                             break;
                         }
                     }
@@ -682,13 +684,15 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
             }
             if ( idFrattura == DFN.Traces_Generator_Id[k][1]) {
                 array<bool, 2> tipologia = {true, true};
+                //unsigned int contatore2 = 0;
                 for (unsigned int j = 0; j < 2; j++) {
                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
-                    for (unsigned int l = 0; l < vertices.size(); l++) {
+                    for (unsigned int l = 0; l < vertices[idFrattura].size(); l++) {
                         Vector3d p1 = vertices[l];
                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
                         if (point_on_line(p1, p2, p_traccia)) {
                             tipologia[j] = false; // La traccia è passante
+                            //contatore2 += 1;
                             break;
                         }
                     }
@@ -704,6 +708,42 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
         }
     }
 }
+
+// PROVA TOMMI
+// void calcolaTipologiaTracce(GeometryDFN& DFN) {
+//     for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
+//         unsigned int i = fracture_entry.first;
+//         const vector<Vector3d>& vertices = fracture_entry.second;
+//         for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+//             int idFrattura = i;
+//             if (idFrattura == DFN.Traces_Generator_Id[k][0] || idFrattura == DFN.Traces_Generator_Id[k][1]) {
+//                 unsigned int tipologiaIndex = (idFrattura == DFN.Traces_Generator_Id[k][0]) ? 0 : 1;
+//                 bool tipologia = true;
+//                 unsigned int contatore = 0;
+
+//                 for (unsigned int j = 0; j < 2; j++) {
+//                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
+//                     for (unsigned int l = 0; l < vertices.size(); l++) {
+//                         Vector3d p1 = vertices[l];
+//                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
+//                         if (point_on_line(p1, p2, p_traccia)) {
+//                             tipologia = false; // La traccia è passante
+//                             contatore += 1;
+//                             break;
+//                         }
+//                     }
+//                 }
+
+//                 if (contatore == 2) {
+//                     DFN.Traces_Tips[k][tipologiaIndex] = false; // La traccia è passante se entrambi i punti sono su lati
+//                 } else {
+//                     DFN.Traces_Tips[k][tipologiaIndex] = true;
+//                 }
+//             }
+//         }
+//     }
+// }
+
 
 
 // void calcolaTipologiaTracce(GeometryDFN& DFN) {
@@ -875,56 +915,127 @@ void calcolaTipologiaTracce(GeometryDFN& DFN) {
 
 
 //vector<Vector2i> sorting(const vector<double>& length, const vector<Vector2i>& type)
-map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id)
+// questo deve diventare un vector<unsigned int> riordinaLunghezze devo riordino solo le tracce per lunghezza con il loro identificativo
+
+// RIORDINAMENTO CHE AVEVAMO PRIMA
+// map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id)
+// {
+//     vector<pair<double,int>> pairLengthID;
+//     for (unsigned int i=0; i<length.size();i++)
+//     {
+//         pairLengthID.push_back({length[i],i});
+//     }
+//     SortLibrary::MergeSort(pairLengthID);
+
+//     vector<array<bool, 2>> passante;
+//     vector<array<bool, 2>> non_passante;
+//     for (unsigned int i=0; i<pairLengthID.size();i++)
+//     {
+//        unsigned int index = pairLengthID[i].first;  // indice della traccia
+//        unsigned int t_id = trace_id[index];
+
+
+//        if (type.at(t_id)[1]==false)
+//        {
+//            passante.push_back(type.at(t_id));
+//        }
+//         else if (type.at(t_id)[1]==true)
+//         {
+//            non_passante.push_back(type.at(t_id));
+//         }
+
+//     }
+//     map<unsigned int,array<bool,2>> sorted;
+//     unsigned int passanteIdx = 0, nonPassanteIdx = 0;
+
+//     // Riempie il map con le tracce passanti
+//     for (unsigned int i = 0; i < passante.size(); i++)
+//     {
+//         unsigned int index = pairLengthID[i].first; // indice della traccia
+//         unsigned int t_id = trace_id[index];
+//         sorted[t_id] = passante[passanteIdx++];
+//     }
+
+//     // Riempie il map con le tracce non passanti
+//     for (unsigned int i = 0; i < non_passante.size(); i++)
+//     {
+//         unsigned int index = pairLengthID[passante.size() + i].first; // indice della traccia
+//         unsigned int t_id = trace_id[index];
+//         sorted[t_id] = non_passante[nonPassanteIdx++];
+//     }
+
+//     return sorted;
+//     // sorted.insert(sorted.end(),passante.begin(),passante.end());
+//     // sorted.insert(sorted.end(),non_passante.begin(),non_passante.end());
+// }
+
+// IDEA ORDINAMENTO DECENTE
+// vector<unsigned int> riordinaLunghezzaTracce(const vector<double>& length, vector<unsigned int>& trace_id)
+// {
+//     vector<pair<double,int>> pairLengthID;
+//     for (unsigned int i=0; i<length.size();i++)
+//     {
+//         pairLengthID.push_back({length[i],i});
+//     }
+//     SortLibrary::MergeSort(pairLengthID);
+
+//     vector<unsigned int> sortedTraceIDs;
+//     for (const auto& pair : pairLengthID)
+//     {
+//         sortedTraceIDs.push_back(trace_id[pair.second]);
+//     }
+
+//     return sortedTraceIDs;
+// }
+
+vector<unsigned int> riordinaLunghezzaTracce(const vector<unsigned int>& traceIds, const GeometryDFN& DFN)
 {
-    vector<pair<double,int>> pairLengthID;
-    for (unsigned int i=0; i<length.size();i++)
+    vector<pair<double, unsigned int>> pairLengthID;
+    for (const auto& traceId : traceIds)
     {
-        pairLengthID.push_back({length[i],i});
-    }
-    SortLibrary::MergeSort(pairLengthID);
-
-    vector<array<bool, 2>> passante;
-    vector<array<bool, 2>> non_passante;
-    for (unsigned int i=0; i<pairLengthID.size();i++)
-    {
-       unsigned int index = pairLengthID[i].first;  // indice della traccia
-       unsigned int t_id = trace_id[index];
-
-
-       if (type.at(t_id)[1]==false)
-       {
-           passante.push_back(type.at(t_id));
-       }
-        else if (type.at(t_id)[1]==true)
+        auto it = find(DFN.Traces_Id.begin(), DFN.Traces_Id.end(), traceId);
+        if (it != DFN.Traces_Id.end())
         {
-           non_passante.push_back(type.at(t_id));
+            unsigned int index = distance(DFN.Traces_Id.begin(), it);
+            double length = DFN.traces_length[index];
+            pairLengthID.push_back({length, traceId});
         }
-
     }
-    map<unsigned int,array<bool,2>> sorted;
-    unsigned int passanteIdx = 0, nonPassanteIdx = 0;
 
-    // Riempie il map con le tracce passanti
-    for (unsigned int i = 0; i < passante.size(); i++)
+    sort(pairLengthID.begin(), pairLengthID.end(), [](const auto& left, const auto& right) {
+        return left.first > right.first;
+    });
+
+    vector<unsigned int> sortedTraceIDs;
+    for (const auto& pair : pairLengthID)
     {
-        unsigned int index = pairLengthID[i].first; // indice della traccia
-        unsigned int t_id = trace_id[index];
-        sorted[t_id] = passante[passanteIdx++];
+        sortedTraceIDs.push_back(pair.second);
     }
 
-    // Riempie il map con le tracce non passanti
-    for (unsigned int i = 0; i < non_passante.size(); i++)
-    {
-        unsigned int index = pairLengthID[passante.size() + i].first; // indice della traccia
-        unsigned int t_id = trace_id[index];
-        sorted[t_id] = non_passante[nonPassanteIdx++];
-    }
-
-    return sorted;
-    // sorted.insert(sorted.end(),passante.begin(),passante.end());
-    // sorted.insert(sorted.end(),non_passante.begin(),non_passante.end());
+    return sortedTraceIDs;
 }
+
+// ORDINAMENTO ABBASTANZA BUONO, SOLO CONTA DUE VOLTE OGNI TRACCIA
+// vector<unsigned int> riordinaLunghezzaTracce(GeometryDFN& DFN)
+// {
+//     calcolaLunghezzaTracce(DFN); // Call calcolaLunghezzaTracce to calculate trace lengths
+
+//     vector<pair<double,int>> pairLengthID;
+//     for (unsigned int i=0; i<DFN.traces_length.size();i++)
+//     {
+//         pairLengthID.push_back({DFN.traces_length[i],i});
+//     }
+//     SortLibrary::MergeSort(pairLengthID);
+
+//     vector<unsigned int> sortedTraceIDs;
+//     for (const auto& pair : pairLengthID)
+//     {
+//         sortedTraceIDs.push_back(DFN.Traces_Id[pair.second]);
+//     }
+
+//     return sortedTraceIDs;
+// }
+
 
 void calcolaLunghezzaTracce(GeometryDFN& DFN)
 {
@@ -936,8 +1047,8 @@ void calcolaLunghezzaTracce(GeometryDFN& DFN)
         DFN.traces_length.push_back(lunghezza);
         DFN.Traces_Id.push_back(entry.first);
     }
-
-    DFN.Traces_Tips = GeometryLibrary::riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
+}
+//     DFN.Traces_Tips = GeometryLibrary::riordinaTracce(DFN.traces_length, DFN.Traces_Tips, DFN.Traces_Id);
 
     //vector<unsigned int> trace_id;
     // for (const auto& item : DFN.Traces_Tips) {
@@ -949,7 +1060,6 @@ void calcolaLunghezzaTracce(GeometryDFN& DFN)
     // }
     //entry.second = riordinaTracce(DFN.traces_length, DFN.Traces_Tips, trace_id);
 
-}
 
 bool OutputTracce(const GeometryDFN& DFN, const string& fileOutput)
 {
@@ -987,7 +1097,7 @@ bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
     file.open(fileOutput);
     if (file.fail())
     {
-        cerr << "errore nell'aprire il file di output: " << fileOutput << endl;
+        cerr << "Errore nell'aprire il file di output: " << fileOutput << endl;
         return false;
     }
     file.precision(16);
@@ -996,38 +1106,53 @@ bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
     for (unsigned int i = 0; i < DFN.Number_Fractures; i++)
     {
         unsigned int fractureId = DFN.Fractures_Id[i];
-        vector<unsigned int> traceIds;
+        vector<unsigned int> passanti;
+        vector<unsigned int> nonPassanti;
 
         for (unsigned int j = 0; j < DFN.Number_Traces; j++)
         {
             Vector2i fractureIds = DFN.Traces_Generator_Id[j];
             if (fractureIds[0] == fractureId || fractureIds[1] == fractureId)
             {
-                traceIds.push_back(DFN.Traces_Id[j]);
+                unsigned int traceId = DFN.Traces_Id[j];
+                array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+
+                if (tips[0] && tips[1]) {
+                    passanti.push_back(traceId);
+                } else {
+                    nonPassanti.push_back(traceId);
+                }
             }
         }
 
-        if (!traceIds.empty())
+        // Ordinare per lunghezza
+        auto sortedPassanti = riordinaLunghezzaTracce(passanti, DFN);
+        auto sortedNonPassanti = riordinaLunghezzaTracce(nonPassanti, DFN);
+
+        // parte tommy
+        //vector<unsigned int> SortedFinal;
+        //SortedFinal.push_back(sortedPassanti)
+
+        if (!sortedPassanti.empty() || !sortedNonPassanti.empty())
         {
             file << "# FractureId; NumTraces" << endl;
-            file << fractureId << "; " << traceIds.size() << endl;
+            file << fractureId << "; " << sortedPassanti.size() + sortedNonPassanti.size() << endl;
             file << "# TraceId; Tips; Length" << endl;
 
-            for (const auto& traceId : traceIds)
+            for (const auto& traceId : sortedPassanti)
             {
                 array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
                 double length = DFN.traces_length[traceId];
+                int tipType = 1;  // Passante
 
+                file << traceId << "; " << tipType << "; " << length << endl;
+            }
 
-
-                // Determinare se è passante o non passante
-                //int tipType = (tips[0] && tips[1]) ? 1 : 0;
-                int tipType;
-                if (tips[0] && tips[1]) {
-                    tipType = 1;
-                } else {
-                    tipType = 0;
-                }
+            for (const auto& traceId : sortedNonPassanti)
+            {
+                array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+                double length = DFN.traces_length[traceId];
+                int tipType = 0;  // Non passante
 
                 file << traceId << "; " << tipType << "; " << length << endl;
             }
@@ -1036,6 +1161,64 @@ bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
     file.close();
     return true;
 }
+
+
+// bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
+// {
+//     ofstream file;
+//     file.open(fileOutput);
+//     if (file.fail())
+//     {
+//         cerr << "errore nell'aprire il file di output: " << fileOutput << endl;
+//         return false;
+//     }
+//     file.precision(16);
+//     file << scientific;
+
+//     for (unsigned int i = 0; i < DFN.Number_Fractures; i++)
+//     {
+//         unsigned int fractureId = DFN.Fractures_Id[i];
+//         vector<unsigned int> traceIds;
+
+//         for (unsigned int j = 0; j < DFN.Number_Traces; j++)
+//         {
+//             Vector2i fractureIds = DFN.Traces_Generator_Id[j];
+//             if (fractureIds[0] == fractureId || fractureIds[1] == fractureId)
+//             {
+//                 traceIds.push_back(DFN.Traces_Id[j]);
+//             }
+//         }
+
+//         if (!traceIds.empty())
+//         {
+//             file << "# FractureId; NumTraces" << endl;
+//             file << fractureId << "; " << traceIds.size() << endl;
+//             file << "# TraceId; Tips; Length" << endl;
+
+//             for (const auto& traceId : traceIds)
+//             {
+//                 // array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+//                 // double length = DFN.traces_length[traceId];
+
+
+
+
+//                 // Determinare se è passante o non passante
+//                 //int tipType = (tips[0] && tips[1]) ? 1 : 0;
+//                 int tipType;
+//                 if (tips[0] && tips[1]) {
+//                     tipType = 1;
+//                 } else {
+//                     tipType = 0;
+//                 }
+
+//                 file << traceId << "; " << tipType << "; " << length << endl;
+//             }
+//         }
+//     }
+//     file.close();
+//     return true;
+// }
 
 
 // bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
