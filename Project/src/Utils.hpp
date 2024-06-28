@@ -33,9 +33,13 @@ bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
 void calcolaTipologiaTracce(GeometryDFN& DFN);
 
-map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id);
+//map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id);
 
 void calcolaLunghezzaTracce(GeometryDFN& DFN);
+
+vector<unsigned int> riordinaLunghezzaTracce(const vector<unsigned int>& traceIds, GeometryDFN& DFN);
+
+//vector<unsigned int> riordinaLunghezzaTracce(const vector<double>& length, vector<unsigned int>& trace_id);
 
 bool OutputTracce(const GeometryDFN& DFN, const string& fileOutput);
 
