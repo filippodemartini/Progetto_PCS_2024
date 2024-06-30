@@ -7,7 +7,7 @@
 #include <vector>
 #include "Eigen/Eigen"
 #include "Eigen/Dense"
-#include "MergeSort.hpp"
+//#include "MergeSort.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -1139,20 +1139,22 @@ bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput)
             file << fractureId << "; " << sortedPassanti.size() + sortedNonPassanti.size() << endl;
             file << "# TraceId; Tips; Length" << endl;
 
-            for (const auto& traceId : sortedPassanti)
-            {
-                array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
-                double length = DFN.traces_length[traceId];
-                int tipType = 1;  // Passante
 
-                file << traceId << "; " << tipType << "; " << length << endl;
-            }
 
             for (const auto& traceId : sortedNonPassanti)
             {
                 array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
                 double length = DFN.traces_length[traceId];
                 int tipType = 0;  // Non passante
+
+                file << traceId << "; " << tipType << "; " << length << endl;
+            }
+
+            for (const auto& traceId : sortedPassanti)
+            {
+                array<bool, 2> tips = DFN.Traces_Tips.at(traceId);
+                double length = DFN.traces_length[traceId];
+                int tipType = 1;  // Passante
 
                 file << traceId << "; " << tipType << "; " << length << endl;
             }
