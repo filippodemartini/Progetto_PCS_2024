@@ -133,12 +133,12 @@ int main()
 
 
     // PER I FILE DI OUTPUT
-    string fileOutputTracce = "./Tracce_FR10.txt";
+    string fileOutputTracce = "./Tracce_FR10__.txt";
     OutputTracce(dfn, fileOutputTracce);
 
 
 
-    string fileOutputFratture = "./Fratture_FR10.txt";
+    string fileOutputFratture = "./Fratture_FR10__.txt";
     OutputFratture(dfn,fileOutputFratture);
 
 
