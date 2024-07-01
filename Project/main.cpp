@@ -10,7 +10,7 @@ using namespace GeometryLibrary;
 int main()
 {
     GeometryDFN dfn;
-    string filename = "./FR10_data.txt";
+    string filename = "./FR3_data.txt";
     if(!ImportFractures(filename, dfn)){
         return 1;
     }
@@ -133,12 +133,12 @@ int main()
 
 
     // PER I FILE DI OUTPUT
-    string fileOutputTracce = "./Tracce_FR10__.txt";
+    string fileOutputTracce = "./Tracce_FR3__.txt";
     OutputTracce(dfn, fileOutputTracce);
 
 
 
-    string fileOutputFratture = "./Fratture_FR10__.txt";
+    string fileOutputFratture = "./Fratture_FR3__.txt";
     OutputFratture(dfn,fileOutputFratture);
 
 
