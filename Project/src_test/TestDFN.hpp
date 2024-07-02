@@ -190,3 +190,68 @@ TEST(PianiParalleliTest, pianinonparalleli){
     ASSERT_FALSE(parallel_planes(poligono1,poligono2));
 }
 
+TEST(CalcolaLunghezzaTracceTest, TestLunghezza) {
+    GeometryDFN DFN;
+    DFN.Number_Traces = 2;
+    //DFN.Traces_Tips[2] = {Vector2i{0, false}, Vector2i{1, true}};
+    DFN.Traces_Coordinates[0] = {Vector3d{0, 0, 0}, Vector3d{3, 4, 0}};
+    DFN.Traces_Coordinates[1] = {Vector3d{1, 1, 1}, Vector3d{4, 5, 5}};
+
+    calcolaLunghezzaTracce(DFN);
+
+    ASSERT_EQ(DFN.traces_length.size(), 2);
+    EXPECT_DOUBLE_EQ(DFN.traces_length[0], 5.0);
+    EXPECT_DOUBLE_EQ(DFN.traces_length[1], sqrt(41.0));
+}
+
+TEST(CalcolaLunghezzaTracceTest, TestLunghezzaZero) {
+    GeometryDFN DFN;
+    DFN.Number_Traces = 2;
+    DFN.Traces_Coordinates[0] = {Vector3d{1, 1, 1}, Vector3d{1, 1, 1}};
+    DFN.Traces_Coordinates[1] = {Vector3d{1, 1, 1}, Vector3d{4, 5, 5}};
+
+    calcolaLunghezzaTracce(DFN);
+
+    ASSERT_EQ(DFN.traces_length.size(), 2);
+    EXPECT_DOUBLE_EQ(DFN.traces_length[0], 0.0);  // La lunghezza dovrebbe essere zero
+    EXPECT_DOUBLE_EQ(DFN.traces_length[1], sqrt(41.0));
+}
+
+// TEST(RiordinaLunghezzaTracceTest, TestBase) {
+//     GeometryDFN DFN;
+//     DFN.Number_Traces = 3;
+//     DFN.Traces_Coordinates[0] = {Vector3d{0, 0, 0}, Vector3d{3, 0, 0}};  // Lunghezza = 3.0
+//     DFN.Traces_Coordinates[1] = {Vector3d{0, 0, 0}, Vector3d{0, 4, 0}};  // Lunghezza = 4.0
+//     DFN.Traces_Coordinates[2] = {Vector3d{0, 0, 0}, Vector3d{0, 0, 5}};  // Lunghezza = 5.0
+
+//     calcolaLunghezzaTracce(DFN);
+
+//     vector<unsigned int> traceIds = {0, 1, 2};
+//     vector<unsigned int> sortedTraceIds = riordinaLunghezzaTracce(traceIds, DFN);
+
+//     ASSERT_EQ(sortedTraceIds.size(), 3);
+//     EXPECT_EQ(sortedTraceIds[0], 2);  // Lunghezza 5.0, traccia con ID 2
+//     EXPECT_EQ(sortedTraceIds[1], 1);  // Lunghezza 4.0, traccia con ID 1
+//     EXPECT_EQ(sortedTraceIds[2], 0);  // Lunghezza 3.0, traccia con ID 0
+// }
+
+TEST(TrovaTracceTest, Test) {
+    GeometryDFN DFN;
+    DFN.Number_Fractures = 2;
+    DFN.Fractures_Vertices[0] = {Vector3d(0, 0, 0), Vector3d(1, 0, 0), Vector3d(1, 1, 0), Vector3d(0, 1, 0)};
+    DFN.Fractures_Vertices[1] = {Vector3d(0.5, 0.25, -1), Vector3d(0.5, 0.25, 1), Vector3d(1.5, 0.75, 1), Vector3d(1.5, 0.75, -1)};
+    DFN.Fractures_Number_Vertices = {4, 4};
+    DFN.Number_Traces = 0;
+    DFN.Fractures_Id = {0, 1};
+
+    FindTraces(DFN);
+
+    array<Vector3d, 2> coordinateTraccia = {Vector3d(1.0, 0.5, 0), Vector3d(0.5, 0.25, 0)};
+    EXPECT_EQ(DFN.Number_Traces, 1);
+    EXPECT_EQ(DFN.Traces_Id.size(), 1);
+    EXPECT_EQ(DFN.Traces_Id[0], 0);
+    EXPECT_EQ(DFN.Traces_Generator_Id.size(), 1);
+    EXPECT_EQ(DFN.Traces_Generator_Id[0], Vector2i(0, 1));
+    EXPECT_EQ(DFN.Traces_Coordinates[0], coordinateTraccia);
+}
+
