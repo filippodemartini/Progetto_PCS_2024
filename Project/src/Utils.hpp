@@ -37,7 +37,7 @@ void calcolaTipologiaTracce(GeometryDFN& DFN);
 
 void calcolaLunghezzaTracce(GeometryDFN& DFN);
 
-vector<unsigned int> riordinaLunghezzaTracce(const vector<unsigned int>& traceIds, GeometryDFN& DFN);
+vector<unsigned int> riordinaLunghezzaTracce(const vector<unsigned int>& traceIds, const GeometryDFN& DFN);
 
 //vector<unsigned int> riordinaLunghezzaTracce(const vector<double>& length, vector<unsigned int>& trace_id);
 
