@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include "GeometryLibrary.hpp"
 #include "Utils.hpp"
 
@@ -10,7 +9,8 @@ using namespace GeometryLibrary;
 int main()
 {
     GeometryDFN dfn;
-    string filename = "./FR200_data.txt";
+
+    string filename = "./FR50_data.txt";
     if(!ImportFractures(filename, dfn)){
         return 1;
     }
@@ -133,12 +133,12 @@ int main()
 
 
     // PER I FILE DI OUTPUT
-    string fileOutputTracce = "./Tracce_FR200___.txt";
+    string fileOutputTracce = "./Tracce_FR50--___.txt";
     OutputTracce(dfn, fileOutputTracce);
 
 
 
-    string fileOutputFratture = "./Fratture_FR200___.txt";
+    string fileOutputFratture = "./Fratture_FR50--___.txt";
     OutputFratture(dfn,fileOutputFratture);
 
 
