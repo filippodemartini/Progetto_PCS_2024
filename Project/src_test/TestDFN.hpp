@@ -197,7 +197,7 @@ TEST(CalcolaLunghezzaTracceTest, TestLunghezza) {
     DFN.Traces_Coordinates[0] = {Vector3d{0, 0, 0}, Vector3d{3, 4, 0}};
     DFN.Traces_Coordinates[1] = {Vector3d{1, 1, 1}, Vector3d{4, 5, 5}};
 
-    calcolaLunghezzaTracce(DFN);
+    TracesLength(DFN);
 
     ASSERT_EQ(DFN.traces_length.size(), 2);
     EXPECT_DOUBLE_EQ(DFN.traces_length[0], 5.0);
@@ -210,7 +210,7 @@ TEST(CalcolaLunghezzaTracceTest, TestLunghezzaZero) {
     DFN.Traces_Coordinates[0] = {Vector3d{1, 1, 1}, Vector3d{1, 1, 1}};
     DFN.Traces_Coordinates[1] = {Vector3d{1, 1, 1}, Vector3d{4, 5, 5}};
 
-    calcolaLunghezzaTracce(DFN);
+    TracesLength(DFN);
 
     ASSERT_EQ(DFN.traces_length.size(), 2);
     EXPECT_DOUBLE_EQ(DFN.traces_length[0], 0.0);  // La lunghezza dovrebbe essere zero
@@ -224,10 +224,10 @@ TEST(RiordinaLunghezzaTracceTest, TestBase) {
     DFN.Traces_Coordinates[1] = {Vector3d{0, 0, 0}, Vector3d{0, 4, 0}};  // Lunghezza = 4.0
     DFN.Traces_Coordinates[2] = {Vector3d{0, 0, 0}, Vector3d{0, 0, 5}};  // Lunghezza = 5.0
 
-    calcolaLunghezzaTracce(DFN);
+    TracesLength(DFN);
 
     const vector<unsigned int> traceIds = {0, 1, 2};
-    vector<unsigned int> sortedTraceIds = riordinaLunghezzaTracce(traceIds, DFN);
+    vector<unsigned int> sortedTraceIds = reorganiseLength(traceIds, DFN);
 
     ASSERT_EQ(sortedTraceIds.size(), 3);
     EXPECT_EQ(sortedTraceIds[0], 2);
@@ -270,7 +270,7 @@ TEST(CalcolaTipologiaTracceTest, TestNonPassante) {
 
     DFN.Traces_Generator_Id.push_back(Vector2i(0, 1));
 
-    calcolaTipologiaTracce(DFN);
+    FindTracesType(DFN);
 
     vector<int> Id_FrattureConTraccia_attese = {0, 1};
 
@@ -293,7 +293,7 @@ TEST(CalcolaTipologiaTracceTest, TestPassante) {
 
     DFN.Traces_Generator_Id.push_back(Vector2i(0, 1));
 
-    calcolaTipologiaTracce(DFN);
+    FindTracesType(DFN);
 
     vector<int> Id_FrattureConTraccia_attese = {0, 1};
 
