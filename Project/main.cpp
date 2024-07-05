@@ -10,7 +10,7 @@ int main()
 {
     GeometryDFN dfn;
 
-    string filename = "./FR50_data.txt";
+    string filename = "./FR200_data.txt";
     if(!ImportFractures(filename, dfn)){
         return 1;
     }
@@ -24,7 +24,7 @@ int main()
     //          << " Coordinate: " << dfn.Traces_Coordinates[i][0] << ";" << dfn.Traces_Coordinates[i][1] << endl;
     // }
 
-    calcolaTipologiaTracce(dfn);
+    FindTracesType(dfn);
     // map<unsigned int, vector<string>> fratture_tracce;
 
     // for (unsigned int k = 0; k < dfn.Number_Traces; k++) {
@@ -51,7 +51,7 @@ int main()
     //     cout << endl;
     // }
 
-    calcolaLunghezzaTracce(dfn);
+    TracesLength(dfn);
     //riordinaLunghezzaTracce(dfn);
 
     // cout << "Lunghezze delle tracce:" << endl;
@@ -133,13 +133,13 @@ int main()
 
 
     // PER I FILE DI OUTPUT
-    string fileOutputTracce = "./Tracce_FR50--___.txt";
-    OutputTracce(dfn, fileOutputTracce);
+    string fileOutputTracce = "./Tracce_FR200.txt";
+    OutputTraces(dfn, fileOutputTracce);
 
 
 
-    string fileOutputFratture = "./Fratture_FR50--___.txt";
-    OutputFratture(dfn,fileOutputFratture);
+    string fileOutputFratture = "./Fratture_FR200.txt";
+    OutputFractures(dfn,fileOutputFratture);
 
 
 

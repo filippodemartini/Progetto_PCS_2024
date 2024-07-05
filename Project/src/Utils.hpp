@@ -21,8 +21,6 @@ bool FirstSelectionTraces(vector<Vector3d>& fracture_generator1, vector<Vector3d
 
 void FindTraces(GeometryDFN& dfn);
 
-//void TracesType(GeometryDFN& dfn);
-
 bool point_on_line(Vector3d& line_origin, Vector3d& line_end, Vector3d& point_coord);
 
 bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, const Vector3d& p3);
@@ -31,34 +29,18 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 
 bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
-void calcolaTipologiaTracce(GeometryDFN& DFN);
+void FindTracesType(GeometryDFN& DFN);
 
 //map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id);
 
-void calcolaLunghezzaTracce(GeometryDFN& DFN);
+void TracesLength(GeometryDFN& DFN);
 
-vector<unsigned int> riordinaLunghezzaTracce(const vector<unsigned int>& traceIds, const GeometryDFN& DFN);
+vector<unsigned int> reorganiseLength(const vector<unsigned int>& traceIds, const GeometryDFN& DFN);
 
 //vector<unsigned int> riordinaLunghezzaTracce(const vector<double>& length, vector<unsigned int>& trace_id);
 
-bool OutputTracce(const GeometryDFN& DFN, const string& fileOutput);
+bool OutputTraces(const GeometryDFN& DFN, const string& fileOutput);
 
-bool OutputFratture(const GeometryDFN& DFN, const string& fileOutput);
-
-//void lengthTraces(GeometryDFN& DFN);
-
-//bool isFratturaIntersecante(unsigned int k, unsigned int i, const GeometryDFN& DFN);
-
-//std::array<bool, 2> getTipologia(unsigned int i, unsigned int k, GeometryDFN& DFN);
-
-//inline MatrixXd fracture_vertices_line(unsigned int id_vertex1, unsigned int id_vertex2, const vector<Vector3d>& coordinates);
-
-//inline Vector2d alpha_beta_intersection(MatrixXd fr_v_line, MatrixXd intersection);
-
-//inline Vector3d point_intersection_lines(GeometryDFN& dfn);
-
-//bool checkSegmentIntersection(vector<Vector3d>& intersections, const Vector3d normal_plane, Vector3d plane_point, Vector3d point1, Vector3d point2, double tol);
-
-// bool TIPS ??
+bool OutputFractures(const GeometryDFN& DFN, const string& fileOutput);
 
 }
