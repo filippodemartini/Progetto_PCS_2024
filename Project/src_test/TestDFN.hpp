@@ -12,7 +12,7 @@
 using namespace std;
 using namespace GeometryLibrary;
 
-// test funzione che calcola il centroide
+
 TEST(FindBarycentreTest, quadrato) {
     vector<Vector3d> quadrato = {
         Vector3d(1, 1, 0),
@@ -48,7 +48,7 @@ TEST(FindBarycentreTest, pentagono) {
     ASSERT_EQ(FindBarycentre(pentagono), risultato3);
 }
 
-// test per raggio della circonferenza che inscrive una frattura
+
 TEST(CircleRadiusTest, rettangolo) {
     vector<Vector3d> rettangolo = {
        Vector3d(1, 1, 1),
@@ -60,7 +60,7 @@ TEST(CircleRadiusTest, rettangolo) {
     ASSERT_TRUE(std::abs(CircleRadius(rettangolo)-raggio)<1.e-5*abs(raggio));
 }
 
-// test per calcolo della normale ad un piano
+
 TEST(NormalToPlaneTest, triangoloPiano) {
     vector<Vector3d> triangolo = {
         Vector3d(0, 0, 0),

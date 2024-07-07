@@ -7,8 +7,6 @@ using namespace std;
 
 namespace GeometryLibrary{
 
-// bool ImportDFN(const string &filepath, GeometryDFN& dfn);
-
 bool ImportFractures(const string &filename, GeometryDFN& dfn);
 
 inline Vector3d FindBarycentre(vector<Vector3d>& vertices);
@@ -31,13 +29,9 @@ bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2);
 
 void FindTracesType(GeometryDFN& DFN);
 
-//map<unsigned int,array<bool, 2>> riordinaTracce(const vector<double>& length, map<unsigned int,array<bool, 2>>& type, vector<unsigned int>& trace_id);
-
 void TracesLength(GeometryDFN& DFN);
 
 vector<unsigned int> reorganiseLength(const vector<unsigned int>& traceIds, const GeometryDFN& DFN);
-
-//vector<unsigned int> riordinaLunghezzaTracce(const vector<double>& length, vector<unsigned int>& trace_id);
 
 bool OutputTraces(const GeometryDFN& DFN, const string& fileOutput);
 

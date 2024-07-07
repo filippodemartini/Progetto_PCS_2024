@@ -446,30 +446,27 @@ bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_ver
 }
 
 
-// FUNZIONA QUASI PERFETTAMENTE
 void FindTracesType(GeometryDFN& DFN) {
-    for (const auto& fracture_entry : DFN.Fractures_Vertices) { // ciclo sulle fratture
+    for (const auto& fracture_entry : DFN.Fractures_Vertices) {
         unsigned int i = fracture_entry.first;
         const vector<Vector3d>& vertices = fracture_entry.second;
-        for (unsigned int k = 0; k < DFN.Number_Traces; k++) { // ciclo sulle tracce
+        for (unsigned int k = 0; k < DFN.Number_Traces; k++) {
             int idFrattura = i;
             if (idFrattura == DFN.Traces_Generator_Id[k][0]) {
                 array<bool, 2> type = {true, true};
-                //unsigned int contatore1 = 0;
                 for (unsigned int j = 0; j < 2; j++) {
                     Vector3d p_traccia = DFN.Traces_Coordinates[k][j];
                     for (unsigned int l = 0; l < vertices.size(); l++) {
                         Vector3d p1 = vertices[l];
                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
                         if (point_on_line(p1, p2, p_traccia)) {
-                            type[j] = false; // La traccia è passante
-                            //contatore1 += 1;
+                            type[j] = false;
                             break;
                         }
                     }
                 }
                 if (type[0]==false && type[1]==false){
-                    DFN.Traces_Tips[k][0] = false; // La traccia è passante se entrambe sono false
+                    DFN.Traces_Tips[k][0] = false;
                 }
                 else{
                     DFN.Traces_Tips[k][0] = true;
@@ -483,13 +480,13 @@ void FindTracesType(GeometryDFN& DFN) {
                         Vector3d p1 = vertices[l];
                         Vector3d p2 = (l + 1 < vertices.size()) ? vertices[l + 1] : vertices[0];
                         if (point_on_line(p1, p2, p_traccia)) {
-                            type[j] = false; // La traccia è passante
+                            type[j] = false;
                             break;
                         }
                     }
                 }
                 if (type[0]==false && type[1]==false){
-                    DFN.Traces_Tips[k][1] = false; // La traccia è passante se entrambe sono false
+                    DFN.Traces_Tips[k][1] = false;
                 }
                 else{
                     DFN.Traces_Tips[k][1] = true;
@@ -604,7 +601,7 @@ bool OutputFractures(const GeometryDFN& DFN, const string& fileOutput)
             }
         }
 
-        // Ordinare per lunghezza
+
         auto sortedPassanti = reorganiseLength(passanti, DFN);
         auto sortedNonPassanti = reorganiseLength(nonPassanti, DFN);
 
