@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include "GeometryLibrary.hpp"
 
 using namespace std;

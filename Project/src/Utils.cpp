@@ -185,138 +185,6 @@ bool parallel_planes(vector<Vector3d>& fracture1, vector<Vector3d>& fracture2)
 }
 
 
-// COSI FUNZIONAVA TUTTO
-// void FindTraces(GeometryDFN& dfn)
-// {
-//     unsigned int index_trace = 0;
-//     double tol = numeric_limits<double>::epsilon();
-
-//     // CONTROLLARE COSA CAMBIA SENZA IL -1; il -1 serve per l'id
-//     for(unsigned int i = 0; i < dfn.Number_Fractures - 1; i++){
-//         for(unsigned int j = i+1; j<dfn.Number_Fractures; j++){
-
-//             if(parallel_planes(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j])){
-//                 cout << "Le fratture: " << dfn.Fractures_Id[i] << " e " << dfn.Fractures_Id[j] << " sono parallele" << endl;
-//                 continue;           // CONTROLLA LA FUNZIONALITA DI CONTINUE
-//             }
-
-//             if(!FirstSelectionTraces(dfn.Fractures_Vertices[i], dfn.Fractures_Vertices[j], tol)){   // CONTROLLA IL !
-//                 Vector3d Normal_i = NormalToPlane(dfn.Fractures_Vertices[i]);
-//                 Vector3d Normal_j = NormalToPlane(dfn.Fractures_Vertices[j]);
-//                 Vector3d T = Normal_i.cross(Normal_j);
-//                 Matrix3d Planes_Matrix;
-//                 Planes_Matrix.row(0) = Normal_i;
-//                 Planes_Matrix.row(1) = Normal_j;
-//                 Planes_Matrix.row(2) = T;
-//                 double d1 = Normal_i.dot(FindBarycentre(dfn.Fractures_Vertices[i]));
-//                 double d2 = Normal_j.dot(FindBarycentre(dfn.Fractures_Vertices[j]));
-//                 double d3 = 0;
-//                 Vector3d b = {d1,d2,d3};
-
-//                 double det_matrix = Planes_Matrix.determinant();
-//                 if(det_matrix > tol){
-//                     Vector3d p_intersection = Planes_Matrix.fullPivLu().solve(b); // trovato vettore p1,p2,p3 del foglio geom comp 2
-//                     unsigned int num_traces_points = 0;
-//                     array<Vector3d,2> traces_points;
-//                     for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[i]; k++)
-//                     {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
-
-//                         Vector3d v1 = dfn.Fractures_Vertices[i][k];
-//                         Vector3d v2 = dfn.Fractures_Vertices[i][(k + 1) % dfn.Fractures_Number_Vertices[i]]; // faccio sta roba per non andare fuori scope
-
-//                         MatrixXd A = MatrixXd::Zero(3,2);
-
-//                         A.col(0) = v2-v1;   // è una retta così come t
-//                         A.col(1) = T;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
-
-//                         if((v2-v1).cross(T).squaredNorm() < tol)
-//                         {
-//                             continue;
-//                         }
-
-
-//                         double b0 = p_intersection[0] - v1[0];
-//                         double b1 = p_intersection[1] - v1[1];
-//                         double b2 = p_intersection[2] - v1[2];
-//                         Vector3d b = {b0,b1,b2};
-
-//                         Vector2d alpha_beta = A.householderQr().solve(b);
-
-//                         if(alpha_beta[0]>-tol && alpha_beta[0]<1+tol && num_traces_points < 2)
-//                         {//controllo che non prenda due volte lo stesso punto
-//                             Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
-//                             if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]))
-//                                 {
-//                                     traces_points[num_traces_points] = Intersection;
-//                                     num_traces_points += 1;
-//                                 }
-//                             else if (num_traces_points == 1 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[j]) && traces_points[0] !=Intersection)
-//                             { traces_points[num_traces_points]=Intersection;
-//                                 num_traces_points+=1;
-//                                     dfn.Number_Traces+=1;
-//                                 dfn.Traces_Id.push_back(index_trace);
-//                                 Vector2i fracture = {dfn.Fractures_Id[i], dfn.Fractures_Id[j]};
-//                                 dfn.Traces_Generator_Id.push_back(fracture);
-//                                 dfn.Traces_Coordinates[index_trace] = traces_points;
-//                                 index_trace += 1;
-//                             }
-
-//                         }
-
-//                     } // qui controllo sulla seconda frattura, almeno da trovare anche il secondo punto di intersezione nel caso rosso-blu in FR3
-//                     for(unsigned int k = 0; k < dfn.Fractures_Number_Vertices[j]; k++)
-//                     {                  // SE NON FUNZIONA SICURAMENTE QUA QUALCOSA NON VA BENE; CAPIRE SE QUESTO FOR DEVE GIRARE SU K O SU J
-
-//                         Vector3d v1 = dfn.Fractures_Vertices[j][k];
-//                         Vector3d v2 = dfn.Fractures_Vertices[j][(k + 1) % dfn.Fractures_Number_Vertices[i]];
-
-//                         MatrixXd A = MatrixXd::Zero(3,2);
-
-//                         A.col(0) = v2-v1;
-//                         A.col(1) = T;  // per tornare al valore positivo di beta dal -beta che abbiamo nella sottrazione tra equazioni delle due rette
-
-//                         if((v2-v1).cross(T).squaredNorm() < tol)
-//                         {
-//                             continue;
-//                         }
-
-
-//                         double b0 = p_intersection[0] - v1[0];
-//                         double b1 = p_intersection[1] - v1[1];
-//                         double b2 = p_intersection[2] - v1[2];
-//                         Vector3d b = {b0,b1,b2};
-
-//                         Vector2d alpha_beta = A.householderQr().solve(b);
-
-//                         if(alpha_beta[0]>-tol && alpha_beta[0]<1+tol && num_traces_points < 2)
-//                         {
-//                             Vector3d Intersection = v1+(alpha_beta[0]*(v2-v1));
-//                             if (num_traces_points == 0 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[i]))
-//                             {
-//                                 traces_points[num_traces_points] = Intersection;
-//                                 num_traces_points += 1;
-//                             }
-//                             else if (num_traces_points == 1 && check_inside_fracture(Intersection, dfn.Fractures_Vertices[i]) && traces_points[0] !=Intersection)
-//                             { traces_points[num_traces_points]=Intersection;
-//                                 num_traces_points+=1;
-//                                 dfn.Number_Traces+=1;
-//                                 dfn.Traces_Id.push_back(index_trace);
-//                                 Vector2i fracture = {dfn.Fractures_Id[i], dfn.Fractures_Id[j]};
-//                                 dfn.Traces_Generator_Id.push_back(fracture);
-//                                 dfn.Traces_Coordinates[index_trace] = traces_points;
-//                                 index_trace += 1;
-//                             }
-
-//                         }
-
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-
 void FindTraces(GeometryDFN& dfn)
 {
     unsigned int index_trace = 0;
@@ -430,7 +298,7 @@ bool check_barycentre_coord(const Vector3d& p0, const Vector3d& p1, const Vector
     double barycentre_coord1 = (1 / det) * (dotProductMatrix[1][1]*vector0.dot(vector2)-dotProductMatrix[0][1]*vector1.dot(vector2));
     double barycentre_coord2 = (1 / det) * (dotProductMatrix[0][0]*vector1.dot(vector2)-dotProductMatrix[0][1]*vector0.dot(vector2));
 
-    return((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1));  // questi sono gli alfa0 e alfa1 di geom comp
+    return((barycentre_coord1 >= 0) && (barycentre_coord2 >= 0) && (barycentre_coord1+barycentre_coord2 <= 1));
 }
 
 bool check_inside_fracture(const Vector3d& point, vector<Vector3d>& fracture_vertex)
