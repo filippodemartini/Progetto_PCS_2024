@@ -6,7 +6,6 @@
 #include <vector>
 #include "Eigen/Eigen"
 #include "cmath"
-#include "algorithm"
 
 
 using namespace std;
@@ -297,7 +296,6 @@ TEST(CalcolaTipologiaTracceTest, TestPassante) {
 
     vector<int> Id_FrattureConTraccia_attese = {0, 1};
 
-    // Verifica
     ASSERT_EQ(DFN.Traces_Tips.size(), DFN.Number_Traces);
     for (const auto& tip : DFN.Traces_Tips) {
         EXPECT_EQ(tip.second[0], false);
